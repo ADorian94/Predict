@@ -88,6 +88,7 @@ public partial class ResultViewModel : ObservableObject
             $"Best estimate: {AnimatedBestEstimate}\n\n" +
             $"Formulas:\n{lines}";
 
+        MixpanelService.Track("result_shared");
         await Microsoft.Maui.ApplicationModel.DataTransfer.Share.Default.RequestAsync(
             new Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest
             {

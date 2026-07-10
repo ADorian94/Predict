@@ -11,7 +11,8 @@ public partial class App : Application
     protected override void OnStart()
     {
         base.OnStart();
-CheckCrashLog();
+        Predict.Services.MixpanelService.Track("app_opened");
+        CheckCrashLog();
     }
 
     private static async void CheckCrashLog()

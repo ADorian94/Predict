@@ -25,7 +25,11 @@ public partial class SettingsViewModel : ObservableObject
     public Color KgTextColor   => IsLbs ? Color.FromArgb("#505870") : Color.FromArgb("#C084FC");
     public Color LbsTextColor  => IsLbs ? Color.FromArgb("#C084FC") : Color.FromArgb("#505870");
 
-    partial void OnIsLbsChanged(bool value) => _settings.IsLbs = value;
+    partial void OnIsLbsChanged(bool value)
+    {
+        _settings.IsLbs = value;
+        MixpanelService.Track("unit_changed", new() { ["unit"] = value ? "lbs" : "kg" });
+    }
 
     [RelayCommand] private void SelectKg()  => IsLbs = false;
     [RelayCommand] private void SelectLbs() => IsLbs = true;
@@ -47,7 +51,11 @@ public partial class SettingsViewModel : ObservableObject
     public Color RoundedTextColor  => IsRounded ? Color.FromArgb("#C084FC") : Color.FromArgb("#505870");
     public Color RawTextColor      => IsRounded ? Color.FromArgb("#505870") : Color.FromArgb("#C084FC");
 
-    partial void OnIsRoundedChanged(bool value) => _settings.IsRounded = value;
+    partial void OnIsRoundedChanged(bool value)
+    {
+        _settings.IsRounded = value;
+        MixpanelService.Track("rounding_changed", new() { ["is_rounded"] = value });
+    }
 
     [RelayCommand] private void SelectRounded() => IsRounded = true;
     [RelayCommand] private void SelectRaw()     => IsRounded = false;

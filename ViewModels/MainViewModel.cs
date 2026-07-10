@@ -133,6 +133,17 @@ public partial class MainViewModel : ObservableObject
         var result   = OneRmCalculator.Calculate(weightKg, reps, Rpe, IsLbs, _settings.IsRounded);
         _resultContext.Current = result;
         await HistoryService.SaveAsync(result);
+
+        MixpanelService.Track("estimate_calculated", new()
+        {
+            ["weight_kg"]    = Math.Round(weightKg, 2),
+            ["reps"]         = reps,
+            ["rpe"]          = Rpe,
+            ["unit"]         = IsLbs ? "lbs" : "kg",
+            ["best_est_kg"]  = result.BestEstimate,
+            ["is_rounded"]   = _settings.IsRounded,
+        });
+
         await Shell.Current.GoToAsync(nameof(ResultPage));
     }
 
@@ -152,10 +163,16 @@ public partial class MainViewModel : ObservableObject
         && reps <= AppConstants.MaxReps;
 
     [RelayCommand]
-    private static async Task ShowHistory() =>
+    private static async Task ShowHistory()
+    {
+        MixpanelService.Track("history_opened");
         await Shell.Current.GoToAsync(nameof(HistoryPage));
+    }
 
     [RelayCommand]
-    private static async Task ShowSettings() =>
+    private static async Task ShowSettings()
+    {
+        MixpanelService.Track("settings_opened");
         await Shell.Current.GoToAsync(nameof(SettingsPage));
+    }
 }
