@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:shapes="clr-namespace:Microsoft.Maui.Controls.Shapes;assembly=Microsoft.Maui.Controls"
+             xmlns:vm="clr-namespace:Predict.ViewModels"
+             x:Class="Predict.SettingsPage"
+             BackgroundColor="#08081C"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,4,20,16">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,4,0,20">
+            <Border Grid.Column="0" WidthRequest="48" HeightRequest="48" StrokeThickness="1">
+                <Border.Background><SolidColorBrush Color="#1E1E3A"/></Border.Background>
+                <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GoBackCommand}"/>
+                </Border.GestureRecognizers>
+                <Label Text="&#xE5C4;" FontFamily="MaterialIcons"
+                       FontSize="22" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+            <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="14,0,0,0" VerticalOptions="Center">
+                <Label Text="SETTINGS"
+                       FontSize="28" FontAttributes="Bold"
+                       TextColor="#C084FC" CharacterSpacing="2"/>
+                <Label Text="PREFERENCES"
+                       FontSize="14" TextColor="#B4BEDC" CharacterSpacing="4"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="20">
+
+                <!-- Unit of weight -->
+                <Label Text="UNIT OF WEIGHT"
+                       FontSize="11" FontAttributes="Bold"
+                       TextColor="#8C9EC6" CharacterSpacing="2"
+                       Margin="4,0,0,0"/>
+                <Border Padding="18,16" StrokeThickness="1.5">
+                    <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
+                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                    <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border Grid.Column="0" Padding="0,16" StrokeThickness="1.5"
+                                Background="{Binding KgBackground}"
+                                Stroke="{Binding KgBorder}">
+                            <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectKgCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="kg" FontSize="16" FontAttributes="Bold"
+                                   TextColor="{Binding KgTextColor}"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <Border Grid.Column="1" Padding="0,16" StrokeThickness="1.5"
+                                Background="{Binding LbsBackground}"
+                                Stroke="{Binding LbsBorder}">
+                            <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectLbsCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="lbs" FontSize="16" FontAttributes="Bold"
+                                   TextColor="{Binding LbsTextColor}"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Best estimation rounding -->
+                <Label Text="BEST ESTIMATION"
+                       FontSize="11" FontAttributes="Bold"
+                       TextColor="#8C9EC6" CharacterSpacing="2"
+                       Margin="4,0,0,0"/>
+                <Border Padding="18,16" StrokeThickness="1.5">
+                    <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
+                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                    <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border Grid.Column="0" Padding="0,16" StrokeThickness="1.5"
+                                Background="{Binding RoundedBackground}"
+                                Stroke="{Binding RoundedBorder}">
+                            <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectRoundedCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="ROUNDED" FontSize="13" FontAttributes="Bold"
+                                   TextColor="{Binding RoundedTextColor}"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                        <Border Grid.Column="1" Padding="0,16" StrokeThickness="1.5"
+                                Background="{Binding RawBackground}"
+                                Stroke="{Binding RawBorder}">
+                            <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectRawCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="RAW" FontSize="13" FontAttributes="Bold"
+                                   TextColor="{Binding RawTextColor}"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

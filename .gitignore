@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+.DS_Store
+google-services.json
+*.keystore
+*.jks
+*.p12

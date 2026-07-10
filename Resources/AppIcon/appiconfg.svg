@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fillGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3D1A7A" stop-opacity="0.6"/>
+      <stop offset="60%" stop-color="#5B21B6" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#2563EB" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="55%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Chart fill area -->
+  <polygon points="60,382 60,348 148,285 236,210 326,148 396,96 396,382"
+           fill="url(#fillGrad)"/>
+
+  <!-- Baseline -->
+  <line x1="50" y1="382" x2="406" y2="382" stroke="#4040A0" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Chart line -->
+  <polyline points="60,348 148,285 236,210 326,148 396,96"
+            fill="none" stroke="url(#lineGrad)" stroke-width="20"
+            stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Data point dots -->
+  <circle cx="60"  cy="348" r="11" fill="#C084FC"/>
+  <circle cx="148" cy="285" r="11" fill="#9D55F5"/>
+  <circle cx="236" cy="210" r="11" fill="#7C3AED"/>
+  <circle cx="326" cy="148" r="12" fill="#60A5FA"/>
+  <circle cx="396" cy="96"  r="13" fill="#93C5FD"/>
+</svg>

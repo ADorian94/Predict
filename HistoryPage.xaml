@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:shapes="clr-namespace:Microsoft.Maui.Controls.Shapes;assembly=Microsoft.Maui.Controls"
+             xmlns:vm="clr-namespace:Predict.ViewModels"
+             xmlns:models="clr-namespace:Predict.Models"
+             x:Class="Predict.HistoryPage"
+             BackgroundColor="#08081C"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,4,20,16">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,4,0,16">
+            <Border Grid.Column="0" WidthRequest="48" HeightRequest="48" StrokeThickness="1">
+                <Border.Background><SolidColorBrush Color="#1E1E3A"/></Border.Background>
+                <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GoBackCommand}"/>
+                </Border.GestureRecognizers>
+                <Label Text="&#xE5C4;" FontFamily="MaterialIcons"
+                       FontSize="22" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+            <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="14,0,0,0" VerticalOptions="Center">
+                <Label Text="HISTORY"
+                       FontSize="28" FontAttributes="Bold"
+                       TextColor="#C084FC" CharacterSpacing="2"/>
+                <Label Text="RECENT ESTIMATIONS"
+                       FontSize="14" TextColor="#B4BEDC" CharacterSpacing="4"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Animated list wrapper -->
+        <Grid x:Name="ListWrapper" Grid.Row="1" Opacity="0" TranslationY="30">
+            <CollectionView ItemsSource="{Binding Entries}" x:Name="HistoryList">
+                <CollectionView.EmptyView>
+                    <Label Text="No history yet."
+                           FontSize="14" TextColor="#8C9EC6"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,32,0,0"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:HistoryEntry">
+                        <Border Padding="18,14" StrokeThickness="1.5" Margin="0,0,0,12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={x:Reference HistoryList}, Path=BindingContext.OpenEntryCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </Border.GestureRecognizers>
+                            <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
+                            <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                            <Border.StrokeShape><shapes:RoundRectangle CornerRadius="18"/></Border.StrokeShape>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                    <Label Text="{Binding DateDisplay}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           TextColor="#8C9EC6" CharacterSpacing="1"/>
+                                    <Label Text="{Binding InputDisplay}"
+                                           FontSize="16" FontAttributes="Bold"
+                                           TextColor="White"/>
+                                    <Label Text="{Binding ResultDisplay}"
+                                           FontSize="11" TextColor="#B4BEDC"/>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="&#xE5CC;"
+                                       FontFamily="MaterialIcons"
+                                       FontSize="20" TextColor="#8C9EC6"
+                                       VerticalOptions="Center" Margin="8,0,0,0"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>
