@@ -5,33 +5,33 @@
              xmlns:vm="clr-namespace:Predict.ViewModels"
              xmlns:models="clr-namespace:Predict.Models"
              x:Class="Predict.ResultPage"
-             BackgroundColor="#08081C"
+             BackgroundColor="{DynamicResource PageBackground}"
              Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto,*" Padding="20,4,20,16">
 
         <!-- Header -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,12">
-            <Border Grid.Column="0" WidthRequest="48" HeightRequest="48" StrokeThickness="1">
-                <Border.Background><SolidColorBrush Color="#1E1E3A"/></Border.Background>
-                <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+            <Border Grid.Column="0" WidthRequest="48" HeightRequest="48" StrokeThickness="1"
+                    Background="{DynamicResource CardAltBackgroundBrush}"
+                    Stroke="{DynamicResource CardBorderBrush}">
                 <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding GoBackCommand}"/>
                 </Border.GestureRecognizers>
                 <Label Text="&#xE5C4;" FontFamily="MaterialIcons"
-                       FontSize="22" TextColor="White"
+                       FontSize="22" TextColor="{DynamicResource TextPrimary}"
                        HorizontalOptions="Center" VerticalOptions="Center"/>
             </Border>
             <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="14,0,0,0" VerticalOptions="Center">
                 <Label Text="ESTIMATED 1RM"
                        FontSize="22" FontAttributes="Bold"
-                       TextColor="#C084FC" CharacterSpacing="1"/>
+                       TextColor="{DynamicResource AccentLight}" CharacterSpacing="1"/>
                 <Label Text="{Binding EstimationDate}"
-                       FontSize="14" TextColor="#B4BEDC" CharacterSpacing="4"/>
+                       FontSize="14" TextColor="{DynamicResource LabelSubtitle}" CharacterSpacing="4"/>
             </VerticalStackLayout>
             <Label Grid.Column="2" Text="&#xE80D;" FontFamily="MaterialIcons"
-                   FontSize="28" TextColor="White"
+                   FontSize="28" TextColor="{DynamicResource TextPrimary}"
                    HorizontalOptions="End" VerticalOptions="Center">
                 <Label.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding ShareCommand}"/>
@@ -44,66 +44,66 @@
             <VerticalStackLayout Spacing="12">
 
                 <!-- Input summary -->
-                <Border Padding="18,14" StrokeThickness="1.5">
-                    <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                <Border Padding="18,14" StrokeThickness="1.5"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                         <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
                             <Label Text="WEIGHT" FontSize="11" FontAttributes="Bold"
-                                   TextColor="#8C9EC6" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
+                                   TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
                             <Label Text="{Binding WeightDisplay}"
                                    FontSize="20" FontAttributes="Bold"
-                                   TextColor="#C084FC" HorizontalTextAlignment="Center"/>
+                                   TextColor="{DynamicResource AccentLight}" HorizontalTextAlignment="Center"/>
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
                             <Label Text="REPS" FontSize="11" FontAttributes="Bold"
-                                   TextColor="#8C9EC6" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
+                                   TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
                             <Label Text="{Binding Result.Reps, StringFormat='{0} rep'}"
                                    FontSize="20" FontAttributes="Bold"
-                                   TextColor="#C084FC" HorizontalTextAlignment="Center"/>
+                                   TextColor="{DynamicResource AccentLight}" HorizontalTextAlignment="Center"/>
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
                             <Label Text="RPE" FontSize="11" FontAttributes="Bold"
-                                   TextColor="#8C9EC6" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
+                                   TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
                             <Label Text="{Binding Result.Rpe, StringFormat='{0:0.0}'}"
                                    FontSize="20" FontAttributes="Bold"
-                                   TextColor="#C084FC" HorizontalTextAlignment="Center"/>
+                                   TextColor="{DynamicResource AccentLight}" HorizontalTextAlignment="Center"/>
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
 
                 <!-- Hero card (purple) -->
                 <Border x:Name="BestCard" Padding="20,24" StrokeThickness="1.5"
-                        Opacity="0" TranslationY="40">
-                    <Border.Background><SolidColorBrush Color="#1A1035"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#3D2580"/></Border.Stroke>
+                        Opacity="0" TranslationY="40"
+                        Background="{DynamicResource AccentCardBackgroundBrush}"
+                        Stroke="{DynamicResource AccentCardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
                         <Label Text="BEST ESTIMATE"
-                               FontSize="12" TextColor="#B4BEDC"
+                               FontSize="12" TextColor="{DynamicResource LabelSubtitle}"
                                HorizontalTextAlignment="Center" CharacterSpacing="1"/>
                         <Label Text="{Binding AnimatedBestEstimate}"
                                FontSize="52" FontAttributes="Bold"
-                               TextColor="#C084FC"
+                               TextColor="{DynamicResource AccentLight}"
                                HorizontalTextAlignment="Center"/>
                         <Label Text="{Binding RoundingNote}"
-                               FontSize="11" TextColor="#8C9EC6"
+                               FontSize="11" TextColor="{DynamicResource LabelMuted}"
                                HorizontalTextAlignment="Center"/>
                     </VerticalStackLayout>
                 </Border>
 
                 <!-- Formula comparison -->
                 <Border x:Name="FormulasCard" Padding="18,16" StrokeThickness="1.5"
-                        Opacity="0" TranslationY="40">
-                    <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                        Opacity="0" TranslationY="40"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="8">
                         <Label Text="FORMULA COMPARISON"
                                FontSize="11" FontAttributes="Bold"
-                               TextColor="#8C9EC6" CharacterSpacing="2"/>
-                        <BoxView HeightRequest="1" Color="#2D2D5E"/>
+                               TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
+                        <BoxView HeightRequest="1" Color="{DynamicResource SliderTrack}"/>
                         <CollectionView ItemsSource="{Binding Formulas}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:FormulaEntry">
@@ -111,16 +111,16 @@
                                         <Label Grid.Column="0"
                                                Text="{Binding Name}"
                                                FontSize="14" FontAttributes="Bold"
-                                               TextColor="White" WidthRequest="80"/>
+                                               TextColor="{DynamicResource TextPrimary}" WidthRequest="80"/>
                                         <Label Grid.Column="1"
                                                Text="{Binding FormulaText}"
-                                               FontSize="10" TextColor="#B4BEDC"
+                                               FontSize="10" TextColor="{DynamicResource LabelSubtitle}"
                                                VerticalOptions="Center"
                                                LineBreakMode="TailTruncation"/>
                                         <Label Grid.Column="2"
                                                Text="{Binding ResultDisplay}"
                                                FontSize="15" FontAttributes="Bold"
-                                               TextColor="#60A5FA"
+                                               TextColor="{DynamicResource AccentBlue}"
                                                HorizontalTextAlignment="End"
                                                VerticalOptions="Center"/>
                                     </Grid>
@@ -132,27 +132,27 @@
 
                 <!-- Percentage breakdown (blue) -->
                 <Border x:Name="PctCard" Padding="18,16" StrokeThickness="1.5"
-                        Opacity="0" TranslationY="40">
-                    <Border.Background><SolidColorBrush Color="#0F1635"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#1E3A80"/></Border.Stroke>
+                        Opacity="0" TranslationY="40"
+                        Background="{DynamicResource BlueCardBackgroundBrush}"
+                        Stroke="{DynamicResource BlueCardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="8">
                         <Label Text="PERCENTAGE BREAKDOWN"
                                FontSize="11" FontAttributes="Bold"
-                               TextColor="#8C9EC6" CharacterSpacing="2"/>
+                               TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
                         <Label Text="(based on best estimate, rounded to 2.5)"
-                               FontSize="11" TextColor="#8C9EC6"/>
-                        <BoxView HeightRequest="1" Color="#1E3A80"/>
+                               FontSize="11" TextColor="{DynamicResource LabelMuted}"/>
+                        <BoxView HeightRequest="1" Color="{DynamicResource BlueCardBorderBrush}"/>
                         <CollectionView ItemsSource="{Binding Result.Percentages}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:PercentEntry">
                                     <Grid ColumnDefinitions="*,*" Padding="0,4">
                                         <Label Grid.Column="0" Text="{Binding Label}"
                                                FontSize="11" FontAttributes="Bold"
-                                               TextColor="#8C9EC6" CharacterSpacing="2"/>
+                                               TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
                                         <Label Grid.Column="1" Text="{Binding Display}"
                                                FontSize="18" FontAttributes="Bold"
-                                               TextColor="#60A5FA"
+                                               TextColor="{DynamicResource AccentBlue}"
                                                HorizontalTextAlignment="End"/>
                                     </Grid>
                                 </DataTemplate>
@@ -162,14 +162,14 @@
                 </Border>
 
                 <!-- New prediction button -->
-                <Border StrokeThickness="1.5" HeightRequest="52" Margin="0,4,0,0">
-                    <Border.Background><SolidColorBrush Color="#1E1E3A"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                <Border StrokeThickness="1.5" HeightRequest="52" Margin="0,4,0,0"
+                        Background="{DynamicResource CardAltBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                     <Button Text="New Estimation"
                             Command="{Binding NewEstimationCommand}"
                             BackgroundColor="Transparent"
-                            TextColor="White"
+                            TextColor="{DynamicResource TextPrimary}"
                             FontSize="14"/>
                 </Border>
 

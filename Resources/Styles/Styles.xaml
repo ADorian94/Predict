@@ -7,35 +7,35 @@
     <Style x:Key="AppTitleStyle" TargetType="Label">
         <Setter Property="FontSize" Value="40" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{StaticResource AccentLight}" />
+        <Setter Property="TextColor" Value="{DynamicResource AccentLight}" />
         <Setter Property="CharacterSpacing" Value="2" />
     </Style>
 
     <Style x:Key="AppSubtitleStyle" TargetType="Label">
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="TextColor" Value="{DynamicResource LabelSubtitle}" />
         <Setter Property="CharacterSpacing" Value="4" />
     </Style>
 
     <Style x:Key="SectionLabelStyle" TargetType="Label">
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextMuted}" />
         <Setter Property="CharacterSpacing" Value="2" />
     </Style>
 
     <Style x:Key="CardStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource CardBackground}" />
-        <Setter Property="BorderColor" Value="{StaticResource CardBorder}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource CardBackground}" />
+        <Setter Property="BorderColor" Value="{DynamicResource CardBorder}" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="16,14" />
         <Setter Property="HasShadow" Value="False" />
     </Style>
 
     <Style x:Key="InputEntryStyle" TargetType="Entry">
-        <Setter Property="BackgroundColor" Value="{StaticResource InputBackground}" />
-        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource InputBackground}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{DynamicResource PlaceholderText}" />
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HeightRequest" Value="56" />
@@ -43,47 +43,47 @@
 
     <Style x:Key="UnitLabelStyle" TargetType="Label">
         <Setter Property="FontSize" Value="22" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
         <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
     <Style x:Key="ValueDisplayStyle" TargetType="Label">
         <Setter Property="FontSize" Value="22" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{StaticResource AccentLight}" />
+        <Setter Property="TextColor" Value="{DynamicResource AccentLight}" />
         <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
     <Style x:Key="PrimarySliderStyle" TargetType="Slider">
-        <Setter Property="MinimumTrackColor" Value="{StaticResource AccentPrimary}" />
-        <Setter Property="MaximumTrackColor" Value="{StaticResource CardBorder}" />
-        <Setter Property="ThumbColor" Value="{StaticResource AccentLight}" />
+        <Setter Property="MinimumTrackColor" Value="{DynamicResource AccentPrimary}" />
+        <Setter Property="MaximumTrackColor" Value="{DynamicResource SliderTrack}" />
+        <Setter Property="ThumbColor" Value="{DynamicResource AccentLight}" />
     </Style>
 
     <Style x:Key="SliderTickStyle" TargetType="Label">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="TextColor" Value="{DynamicResource LabelMuted}" />
     </Style>
 
     <Style x:Key="RpeLegendTextStyle" TargetType="Label">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="TextColor" Value="{DynamicResource LabelMuted}" />
     </Style>
 
     <Style x:Key="DividerStyle" TargetType="BoxView">
         <Setter Property="HeightRequest" Value="1" />
-        <Setter Property="Color" Value="{StaticResource DividerColor}" />
+        <Setter Property="Color" Value="{DynamicResource DividerColor}" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
 
     <Style x:Key="ErrorLabelStyle" TargetType="Label">
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="TextColor" Value="{StaticResource ErrorColor}" />
+        <Setter Property="TextColor" Value="{DynamicResource ErrorColor}" />
     </Style>
 
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource AccentPrimary}" />
-        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource AccentPrimary}" />
+        <Setter Property="TextColor" Value="{StaticResource White}" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="CornerRadius" Value="14" />
@@ -93,25 +93,25 @@
 
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="BorderColor" Value="{StaticResource CardBorder}" />
+        <Setter Property="BorderColor" Value="{DynamicResource CardBorder}" />
         <Setter Property="BorderWidth" Value="1" />
         <Setter Property="CornerRadius" Value="14" />
         <Setter Property="HeightRequest" Value="48" />
     </Style>
 
     <Style x:Key="ResultCardStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource ResultCardBg}" />
-        <Setter Property="BorderColor" Value="{StaticResource ResultCardBorder}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource ResultCardBg}" />
+        <Setter Property="BorderColor" Value="{DynamicResource ResultCardBorder}" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="20,24" />
         <Setter Property="HasShadow" Value="False" />
     </Style>
 
     <Style x:Key="SecondaryResultCardStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource ResultCardSecBg}" />
-        <Setter Property="BorderColor" Value="{StaticResource ResultCardSecBorder}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource ResultCardSecBg}" />
+        <Setter Property="BorderColor" Value="{DynamicResource ResultCardSecBorder}" />
         <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="20,24" />
         <Setter Property="HasShadow" Value="False" />
@@ -119,19 +119,19 @@
 
     <Style x:Key="MethodLabelStyle" TargetType="Label">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
         <Setter Property="CharacterSpacing" Value="1" />
     </Style>
 
     <Style x:Key="MainResultStyle" TargetType="Label">
         <Setter Property="FontSize" Value="52" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{StaticResource AccentLight}" />
+        <Setter Property="TextColor" Value="{DynamicResource AccentLight}" />
     </Style>
 
     <Style x:Key="FormulaStyle" TargetType="Label">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextMuted}" />
     </Style>
 
 </ResourceDictionary>

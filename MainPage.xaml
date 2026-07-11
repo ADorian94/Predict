@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:Predict.ViewModels"
              xmlns:conv="clr-namespace:Predict.Converters"
              x:Class="Predict.MainPage"
-             BackgroundColor="#08081C"
+             BackgroundColor="{DynamicResource PageBackground}"
              Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
@@ -22,19 +22,19 @@
                     <VerticalStackLayout Grid.Column="0" Spacing="4">
                         <Label Text="PREDICT"
                                FontSize="42" FontAttributes="Bold"
-                               TextColor="#C084FC" CharacterSpacing="2"/>
+                               TextColor="{DynamicResource AccentLight}" CharacterSpacing="2"/>
                         <Label Text="1RM ESTIMATOR"
-                               FontSize="14" TextColor="#B4BEDC" CharacterSpacing="4"/>
+                               FontSize="14" TextColor="{DynamicResource LabelSubtitle}" CharacterSpacing="4"/>
                     </VerticalStackLayout>
                     <HorizontalStackLayout Grid.Column="1" Spacing="20" VerticalOptions="Center">
                         <Label Text="&#xE889;" FontFamily="MaterialIcons"
-                               FontSize="28" TextColor="White" VerticalOptions="Center">
+                               FontSize="28" TextColor="{DynamicResource TextPrimary}" VerticalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding ShowHistoryCommand}"/>
                             </Label.GestureRecognizers>
                         </Label>
                         <Label Text="&#xE8B8;" FontFamily="MaterialIcons"
-                               FontSize="28" TextColor="White" VerticalOptions="Center">
+                               FontSize="28" TextColor="{DynamicResource TextPrimary}" VerticalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding ShowSettingsCommand}"/>
                             </Label.GestureRecognizers>
@@ -44,88 +44,88 @@
 
                 <!-- Weight card -->
                 <Border x:Name="WeightCard" Padding="18,16" StrokeThickness="1.5"
-                        Opacity="0" TranslationY="40">
-                    <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                        Opacity="0" TranslationY="40"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="10">
                         <Label Text="{Binding WeightLabel}"
                                FontSize="11" FontAttributes="Bold"
-                               TextColor="#8C9EC6" CharacterSpacing="2"/>
+                               TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
                         <Entry Text="{Binding WeightText}"
                                Placeholder="120"
                                Keyboard="Numeric"
                                BackgroundColor="Transparent"
-                               TextColor="White"
-                               PlaceholderColor="#6B7BA0"
+                               TextColor="{DynamicResource TextPrimary}"
+                               PlaceholderColor="{DynamicResource PlaceholderText}"
                                FontSize="28" FontAttributes="Bold"
                                HorizontalTextAlignment="Center"
                                HeightRequest="56"/>
                         <Label Text="{Binding WeightError}"
-                               FontSize="13" TextColor="#F472B6"
+                               FontSize="13" TextColor="{DynamicResource ErrorColor}"
                                IsVisible="{Binding WeightError, Converter={StaticResource StringNotEmptyConverter}}"/>
                     </VerticalStackLayout>
                 </Border>
 
                 <!-- Reps card -->
                 <Border x:Name="RepsCard" Padding="18,16" StrokeThickness="1.5"
-                        Opacity="0" TranslationY="40">
-                    <Border.Background><SolidColorBrush Color="#13132B"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                        Opacity="0" TranslationY="40"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="10">
                         <Label Text="REPS"
                                FontSize="11" FontAttributes="Bold"
-                               TextColor="#8C9EC6" CharacterSpacing="2"/>
+                               TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,4,0,4">
-                            <Border Grid.Column="0" WidthRequest="52" HeightRequest="52" StrokeThickness="1.5">
-                                <Border.Background><SolidColorBrush Color="#1E1E3A"/></Border.Background>
-                                <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                            <Border Grid.Column="0" WidthRequest="52" HeightRequest="52" StrokeThickness="1.5"
+                                    Background="{DynamicResource CardAltBackgroundBrush}"
+                                    Stroke="{DynamicResource CardBorderBrush}">
                                 <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding DecrementRepsCommand}"/>
                                 </Border.GestureRecognizers>
                                 <Label Text="&#xE15B;"
                                        FontFamily="MaterialIcons"
-                                       FontSize="24" TextColor="#C084FC"
+                                       FontSize="24" TextColor="{DynamicResource AccentLight}"
                                        HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <Label Grid.Column="1"
                                    Text="{Binding RepsText}"
                                    FontSize="36" FontAttributes="Bold"
-                                   TextColor="White"
+                                   TextColor="{DynamicResource TextPrimary}"
                                    HorizontalTextAlignment="Center"
                                    VerticalOptions="Center"/>
-                            <Border Grid.Column="2" WidthRequest="52" HeightRequest="52" StrokeThickness="1.5">
-                                <Border.Background><SolidColorBrush Color="#1E1E3A"/></Border.Background>
-                                <Border.Stroke><SolidColorBrush Color="#2D2D5E"/></Border.Stroke>
+                            <Border Grid.Column="2" WidthRequest="52" HeightRequest="52" StrokeThickness="1.5"
+                                    Background="{DynamicResource CardAltBackgroundBrush}"
+                                    Stroke="{DynamicResource CardBorderBrush}">
                                 <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding IncrementRepsCommand}"/>
                                 </Border.GestureRecognizers>
                                 <Label Text="&#xE145;"
                                        FontFamily="MaterialIcons"
-                                       FontSize="24" TextColor="#C084FC"
+                                       FontSize="24" TextColor="{DynamicResource AccentLight}"
                                        HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                         </Grid>
                         <Label Text="{Binding RepsError}"
-                               FontSize="13" TextColor="#F472B6"
+                               FontSize="13" TextColor="{DynamicResource ErrorColor}"
                                IsVisible="{Binding RepsError, Converter={StaticResource StringNotEmptyConverter}}"/>
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- RPE card — x:Name used for animation -->
+                <!-- RPE card -->
                 <Border x:Name="RpeCard" Padding="18,16" StrokeThickness="1.5"
-                        Opacity="0" TranslationY="40">
-                    <Border.Background><SolidColorBrush Color="#1A1035"/></Border.Background>
-                    <Border.Stroke><SolidColorBrush Color="#3D2580"/></Border.Stroke>
+                        Opacity="0" TranslationY="40"
+                        Background="{DynamicResource AccentCardBackgroundBrush}"
+                        Stroke="{DynamicResource AccentCardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <Label Grid.Column="0" Text="RPE"
                                    FontSize="11" FontAttributes="Bold"
-                                   TextColor="#8C9EC6" CharacterSpacing="2"/>
+                                   TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
                             <Label Grid.Column="1"
                                    Text="{Binding RpeDisplay}"
                                    FontSize="22" FontAttributes="Bold"
@@ -135,19 +135,19 @@
                                 Value="{Binding Rpe}"
                                 MinimumTrackColor="{Binding RpeColor}"
                                 ThumbColor="{Binding RpeColor}"
-                                MaximumTrackColor="#2D2D5E"/>
+                                MaximumTrackColor="{DynamicResource SliderTrack}"/>
                         <Grid ColumnDefinitions="*,*,*,*,*">
-                            <Label Grid.Column="0" Text="6" FontSize="11" TextColor="#8C9EC6"/>
-                            <Label Grid.Column="1" Text="7" FontSize="11" TextColor="#8C9EC6" HorizontalTextAlignment="Center"/>
-                            <Label Grid.Column="2" Text="8" FontSize="11" TextColor="#8C9EC6" HorizontalTextAlignment="Center"/>
-                            <Label Grid.Column="3" Text="9" FontSize="11" TextColor="#8C9EC6" HorizontalTextAlignment="Center"/>
-                            <Label Grid.Column="4" Text="10" FontSize="11" TextColor="#8C9EC6" HorizontalTextAlignment="End"/>
+                            <Label Grid.Column="0" Text="6" FontSize="11" TextColor="{DynamicResource LabelMuted}"/>
+                            <Label Grid.Column="1" Text="7" FontSize="11" TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center"/>
+                            <Label Grid.Column="2" Text="8" FontSize="11" TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center"/>
+                            <Label Grid.Column="3" Text="9" FontSize="11" TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center"/>
+                            <Label Grid.Column="4" Text="10" FontSize="11" TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="End"/>
                         </Grid>
-                        <BoxView HeightRequest="1" Color="#2D2D5E"/>
+                        <BoxView HeightRequest="1" Color="{DynamicResource SliderTrack}"/>
                         <Grid ColumnDefinitions="*,*,*">
-                            <Label Grid.Column="0" Text="6 - easy" FontSize="11" TextColor="#8C9EC6"/>
-                            <Label Grid.Column="1" Text="8 - hard" FontSize="11" TextColor="#8C9EC6" HorizontalTextAlignment="Center"/>
-                            <Label Grid.Column="2" Text="10 - max" FontSize="11" TextColor="#8C9EC6" HorizontalTextAlignment="End"/>
+                            <Label Grid.Column="0" Text="6 - easy" FontSize="11" TextColor="{DynamicResource LabelMuted}"/>
+                            <Label Grid.Column="1" Text="8 - hard" FontSize="11" TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center"/>
+                            <Label Grid.Column="2" Text="10 - max" FontSize="11" TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="End"/>
                         </Grid>
                     </VerticalStackLayout>
                 </Border>
@@ -156,14 +156,9 @@
         </ScrollView>
 
         <!-- ESTIMATE button -->
-        <Border Grid.Row="1" StrokeThickness="1.5" HeightRequest="56" Margin="20,12,20,32">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="#7C3AED" Offset="0"/>
-                    <GradientStop Color="#2563EB" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
-            <Border.Stroke><SolidColorBrush Color="#9D5FFF"/></Border.Stroke>
+        <Border Grid.Row="1" StrokeThickness="1.5" HeightRequest="56" Margin="20,12,20,32"
+                Background="{DynamicResource EstimateButtonBrush}"
+                Stroke="{DynamicResource EstimateButtonStroke}">
             <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
             <Button x:Name="CalcButton"
                     Text="ESTIMATE"

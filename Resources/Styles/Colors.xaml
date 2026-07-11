@@ -4,33 +4,40 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Predict — LiquidGlass palette -->
+    <!-- Accent (unchanged across themes) -->
     <Color x:Key="AccentPrimary">#7C3AED</Color>
-    <Color x:Key="AccentLight">#C084FC</Color>
-    <Color x:Key="AccentBlue">#60A5FA</Color>
-    <Color x:Key="AccentPink">#F472B6</Color>
     <Color x:Key="AccentGreen">#34D399</Color>
 
+    <!-- Theme-sensitive colors — dark defaults; ThemeService overwrites at runtime -->
     <Color x:Key="PageBackground">#08081C</Color>
-    <Color x:Key="CardBackground">#0D0D2B</Color>
-    <Color x:Key="CardBorder">#2D2060</Color>
-
     <Color x:Key="TextPrimary">#FFFFFF</Color>
     <Color x:Key="TextSecondary">#A0AACC</Color>
     <Color x:Key="TextMuted">#505870</Color>
-
+    <Color x:Key="LabelMuted">#8C9EC6</Color>
+    <Color x:Key="LabelSubtitle">#B4BEDC</Color>
+    <Color x:Key="AccentLight">#C084FC</Color>
+    <Color x:Key="AccentBlue">#60A5FA</Color>
+    <Color x:Key="AccentPink">#F472B6</Color>
+    <Color x:Key="ErrorColor">#F472B6</Color>
+    <Color x:Key="PlaceholderText">#6B7BA0</Color>
+    <Color x:Key="DividerColor">#1A1A3A</Color>
     <Color x:Key="InputBackground">#06061A</Color>
     <Color x:Key="InputBorder">#3D2A6A</Color>
+    <Color x:Key="SliderTrack">#2D2D5E</Color>
 
-    <Color x:Key="ResultCardBg">#150D3A</Color>
-    <Color x:Key="ResultCardBorder">#7C3AED</Color>
-    <Color x:Key="ResultCardSecBg">#0D1A30</Color>
-    <Color x:Key="ResultCardSecBorder">#60A5FA</Color>
+    <!-- Brush resources — dark defaults -->
+    <SolidColorBrush x:Key="CardBackgroundBrush"       Color="#13132B"/>
+    <SolidColorBrush x:Key="CardAltBackgroundBrush"    Color="#1E1E3A"/>
+    <SolidColorBrush x:Key="AccentCardBackgroundBrush" Color="#1A1035"/>
+    <SolidColorBrush x:Key="BlueCardBackgroundBrush"   Color="#0F1635"/>
+    <SolidColorBrush x:Key="InputBackgroundBrush"      Color="#06061A"/>
+    <SolidColorBrush x:Key="CardBorderBrush"           Color="#2D2D5E"/>
+    <SolidColorBrush x:Key="AccentCardBorderBrush"     Color="#3D2580"/>
+    <SolidColorBrush x:Key="BlueCardBorderBrush"       Color="#1E3A80"/>
+    <SolidColorBrush x:Key="InputBorderBrush"          Color="#3D2A6A"/>
+    <SolidColorBrush x:Key="EstimateButtonStroke"     Color="#9D5FFF"/>
 
-    <Color x:Key="ErrorColor">#F472B6</Color>
-    <Color x:Key="DividerColor">#1A1A3A</Color>
-
-    <!-- Required by MAUI internals -->
+    <!-- Legacy aliases kept for MAUI internals -->
     <Color x:Key="Primary">#7C3AED</Color>
     <Color x:Key="PrimaryDark">#C084FC</Color>
     <Color x:Key="PrimaryDarkText">#08081C</Color>
@@ -48,7 +55,16 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource AccentPrimary}"/>
-    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource AccentBlue}"/>
+    <SolidColorBrush x:Key="PrimaryBrush"   Color="{StaticResource AccentPrimary}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#60A5FA"/>
+
+    <!-- Legacy — kept so old StaticResource refs in Styles.xaml still compile -->
+    <Color x:Key="CardBackground">#13132B</Color>
+    <Color x:Key="CardBorder">#2D2060</Color>
+    <Color x:Key="InputBorderLegacy">#3D2A6A</Color>
+    <Color x:Key="ResultCardBg">#150D3A</Color>
+    <Color x:Key="ResultCardBorder">#7C3AED</Color>
+    <Color x:Key="ResultCardSecBg">#0D1A30</Color>
+    <Color x:Key="ResultCardSecBorder">#60A5FA</Color>
 
 </ResourceDictionary>

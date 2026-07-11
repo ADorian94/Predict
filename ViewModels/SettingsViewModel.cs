@@ -18,12 +18,12 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(LbsTextColor))]
     private bool _isLbs;
 
-    public Brush KgBackground  => new SolidColorBrush(IsLbs ? Color.FromArgb("#13132B") : Color.FromArgb("#1A1035"));
-    public Brush LbsBackground => new SolidColorBrush(IsLbs ? Color.FromArgb("#1A1035") : Color.FromArgb("#13132B"));
-    public Brush KgBorder      => new SolidColorBrush(IsLbs ? Color.FromArgb("#2D2D5E") : Color.FromArgb("#7C3AED"));
-    public Brush LbsBorder     => new SolidColorBrush(IsLbs ? Color.FromArgb("#7C3AED") : Color.FromArgb("#2D2D5E"));
-    public Color KgTextColor   => IsLbs ? Color.FromArgb("#505870") : Color.FromArgb("#C084FC");
-    public Color LbsTextColor  => IsLbs ? Color.FromArgb("#C084FC") : Color.FromArgb("#505870");
+    public Brush KgBackground  => new SolidColorBrush(IsLbs ? ThemeService.CardBg : ThemeService.AccentCardBg);
+    public Brush LbsBackground => new SolidColorBrush(IsLbs ? ThemeService.AccentCardBg : ThemeService.CardBg);
+    public Brush KgBorder      => new SolidColorBrush(IsLbs ? ThemeService.CardBorderCol : ThemeService.AccentLight);
+    public Brush LbsBorder     => new SolidColorBrush(IsLbs ? ThemeService.AccentLight : ThemeService.CardBorderCol);
+    public Color KgTextColor   => IsLbs ? ThemeService.MutedText : ThemeService.AccentLight;
+    public Color LbsTextColor  => IsLbs ? ThemeService.AccentLight : ThemeService.MutedText;
 
     partial void OnIsLbsChanged(bool value)
     {
@@ -44,12 +44,12 @@ public partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(RawTextColor))]
     private bool _isRounded;
 
-    public Brush RoundedBackground => new SolidColorBrush(IsRounded ? Color.FromArgb("#1A1035") : Color.FromArgb("#13132B"));
-    public Brush RawBackground     => new SolidColorBrush(IsRounded ? Color.FromArgb("#13132B") : Color.FromArgb("#1A1035"));
-    public Brush RoundedBorder     => new SolidColorBrush(IsRounded ? Color.FromArgb("#7C3AED") : Color.FromArgb("#2D2D5E"));
-    public Brush RawBorder         => new SolidColorBrush(IsRounded ? Color.FromArgb("#2D2D5E") : Color.FromArgb("#7C3AED"));
-    public Color RoundedTextColor  => IsRounded ? Color.FromArgb("#C084FC") : Color.FromArgb("#505870");
-    public Color RawTextColor      => IsRounded ? Color.FromArgb("#505870") : Color.FromArgb("#C084FC");
+    public Brush RoundedBackground => new SolidColorBrush(IsRounded ? ThemeService.AccentCardBg : ThemeService.CardBg);
+    public Brush RawBackground     => new SolidColorBrush(IsRounded ? ThemeService.CardBg : ThemeService.AccentCardBg);
+    public Brush RoundedBorder     => new SolidColorBrush(IsRounded ? ThemeService.AccentLight : ThemeService.CardBorderCol);
+    public Brush RawBorder         => new SolidColorBrush(IsRounded ? ThemeService.CardBorderCol : ThemeService.AccentLight);
+    public Color RoundedTextColor  => IsRounded ? ThemeService.AccentLight : ThemeService.MutedText;
+    public Color RawTextColor      => IsRounded ? ThemeService.MutedText : ThemeService.AccentLight;
 
     partial void OnIsRoundedChanged(bool value)
     {
@@ -60,12 +60,64 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand] private void SelectRounded() => IsRounded = true;
     [RelayCommand] private void SelectRaw()     => IsRounded = false;
 
+    // ── Theme toggle (2-state) ───────────────────────────────────
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DarkBackground))]
+    [NotifyPropertyChangedFor(nameof(LightBackground))]
+    [NotifyPropertyChangedFor(nameof(DarkBorder))]
+    [NotifyPropertyChangedFor(nameof(LightBorder))]
+    [NotifyPropertyChangedFor(nameof(DarkTextColor))]
+    [NotifyPropertyChangedFor(nameof(LightTextColor))]
+    private string _currentTheme = AppConstants.ThemeDark;
+
+    private Brush InactiveBg     => new SolidColorBrush(ThemeService.CardBg);
+    private Brush ActiveBg       => new SolidColorBrush(ThemeService.AccentCardBg);
+    private Brush InactiveBorder => new SolidColorBrush(ThemeService.CardBorderCol);
+    private Brush ActiveBorder   => new SolidColorBrush(ThemeService.AccentLight);
+    private Color InactiveText   => ThemeService.MutedText;
+    private Color ActiveText     => ThemeService.AccentLight;
+
+    public Brush DarkBackground  => CurrentTheme == AppConstants.ThemeDark  ? ActiveBg : InactiveBg;
+    public Brush LightBackground => CurrentTheme == AppConstants.ThemeLight ? ActiveBg : InactiveBg;
+    public Brush DarkBorder      => CurrentTheme == AppConstants.ThemeDark  ? ActiveBorder : InactiveBorder;
+    public Brush LightBorder     => CurrentTheme == AppConstants.ThemeLight ? ActiveBorder : InactiveBorder;
+    public Color DarkTextColor   => CurrentTheme == AppConstants.ThemeDark  ? ActiveText : InactiveText;
+    public Color LightTextColor  => CurrentTheme == AppConstants.ThemeLight ? ActiveText : InactiveText;
+
+    partial void OnCurrentThemeChanged(string value)
+    {
+        _settings.Theme = value;
+        ThemeService.Apply(value);
+        NotifyAllToggleColors();
+        MixpanelService.Track("theme_changed", new() { ["theme"] = value });
+    }
+
+    [RelayCommand] private void SelectDark()  => CurrentTheme = AppConstants.ThemeDark;
+    [RelayCommand] private void SelectLight() => CurrentTheme = AppConstants.ThemeLight;
+
+    private void NotifyAllToggleColors()
+    {
+        OnPropertyChanged(nameof(KgBackground));
+        OnPropertyChanged(nameof(LbsBackground));
+        OnPropertyChanged(nameof(KgBorder));
+        OnPropertyChanged(nameof(LbsBorder));
+        OnPropertyChanged(nameof(KgTextColor));
+        OnPropertyChanged(nameof(LbsTextColor));
+        OnPropertyChanged(nameof(RoundedBackground));
+        OnPropertyChanged(nameof(RawBackground));
+        OnPropertyChanged(nameof(RoundedBorder));
+        OnPropertyChanged(nameof(RawBorder));
+        OnPropertyChanged(nameof(RoundedTextColor));
+        OnPropertyChanged(nameof(RawTextColor));
+    }
+
     // ── Init & navigation ────────────────────────────────────────
     public SettingsViewModel(AppSettingsService settings)
     {
-        _settings  = settings;
-        _isLbs     = settings.IsLbs;
-        _isRounded = settings.IsRounded;
+        _settings     = settings;
+        _isLbs        = settings.IsLbs;
+        _isRounded    = settings.IsRounded;
+        _currentTheme = settings.Theme;
     }
 
     [RelayCommand]

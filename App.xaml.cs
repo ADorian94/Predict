@@ -1,10 +1,13 @@
+using Predict.Services;
+
 namespace Predict;
 
 public partial class App : Application
 {
-    public App()
+    public App(AppSettingsService settings)
     {
         InitializeComponent();
+        ThemeService.Apply(settings.Theme);
         MainPage = new AppShell();
     }
 

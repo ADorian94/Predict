@@ -9,6 +9,10 @@ public static class AppConstants
     public const string PrefIsLbs     = "predict_islbs";
     public const string PrefIsRounded = "predict_is_rounded";
     public const string PrefHistory   = "predict_history_v1";
+    public const string PrefTheme     = "predict_theme";
+
+    public const string ThemeDark  = "dark";
+    public const string ThemeLight = "light";
 
     // Validation
     public const double MaxWeightKg  = 1000.0;
