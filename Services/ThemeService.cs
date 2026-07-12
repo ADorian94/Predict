@@ -5,29 +5,38 @@ public static class ThemeService
     private static string _current = AppConstants.ThemeDark;
     public static string Current => _current;
 
-    // Color accessors for ViewModel use — always reflect active theme
-    public static Color CardBg        => _current == AppConstants.ThemeLight
-        ? Color.FromArgb("#FFFFFF") : Color.FromArgb("#13132B");
-    public static Color CardAltBg     => _current == AppConstants.ThemeLight
-        ? Color.FromArgb("#F0EDFF") : Color.FromArgb("#1E1E3A");
-    public static Color AccentCardBg  => _current == AppConstants.ThemeLight
-        ? Color.FromArgb("#EDE8FF") : Color.FromArgb("#1A1035");
-    public static Color CardBorderCol => _current == AppConstants.ThemeLight
-        ? Color.FromArgb("#DDD8FF") : Color.FromArgb("#2D2D5E");
-    public static Color AccentLight   => _current == AppConstants.ThemeLight
-        ? Color.FromArgb("#7C3AED") : Color.FromArgb("#C084FC");
-    public static Color MutedText     => _current == AppConstants.ThemeLight
-        ? Color.FromArgb("#8C8AB0") : Color.FromArgb("#505870");
+    // Cached per-theme colors — updated in Apply(), read cheaply by ViewModel
+    private static Color _cardBg        = Color.FromArgb("#13132B");
+    private static Color _cardAltBg     = Color.FromArgb("#1E1E3A");
+    private static Color _accentCardBg  = Color.FromArgb("#1A1035");
+    private static Color _cardBorderCol = Color.FromArgb("#2D2D5E");
+    private static Color _accentLight   = Color.FromArgb("#C084FC");
+    private static Color _mutedText     = Color.FromArgb("#505870");
+
+    public static Color CardBg        => _cardBg;
+    public static Color CardAltBg     => _cardAltBg;
+    public static Color AccentCardBg  => _accentCardBg;
+    public static Color CardBorderCol => _cardBorderCol;
+    public static Color AccentLight   => _accentLight;
+    public static Color MutedText     => _mutedText;
+
+    // Same gradient for all themes — created once
+    private static readonly LinearGradientBrush EstimateGradient = MakeGradient("#7C3AED", "#2563EB");
 
     public static void Apply(string theme)
     {
         _current = theme;
-        var r = Application.Current!.Resources;
+        bool light = theme == AppConstants.ThemeLight;
 
-        if (theme == AppConstants.ThemeLight)
-            ApplyLight(r);
-        else
-            ApplyDark(r);
+        _cardBg        = Color.FromArgb(light ? "#FFFFFF" : "#13132B");
+        _cardAltBg     = Color.FromArgb(light ? "#F0EDFF" : "#1E1E3A");
+        _accentCardBg  = Color.FromArgb(light ? "#EDE8FF" : "#1A1035");
+        _cardBorderCol = Color.FromArgb(light ? "#DDD8FF" : "#2D2D5E");
+        _accentLight   = Color.FromArgb(light ? "#7C3AED" : "#C084FC");
+        _mutedText     = Color.FromArgb(light ? "#8C8AB0" : "#505870");
+
+        var r = Application.Current!.Resources;
+        if (light) ApplyLight(r); else ApplyDark(r);
     }
 
     private static void ApplyDark(ResourceDictionary r)
@@ -58,7 +67,7 @@ public static class ThemeService
         r["BlueCardBorderBrush"]       = new SolidColorBrush(Color.FromArgb("#1E3A80"));
         r["InputBorderBrush"]          = new SolidColorBrush(Color.FromArgb("#3D2A6A"));
         r["EstimateButtonStroke"]      = new SolidColorBrush(Color.FromArgb("#9D5FFF"));
-        r["EstimateButtonBrush"]       = MakeGradient("#7C3AED", "#2563EB");
+        r["EstimateButtonBrush"]       = EstimateGradient;
     }
 
     private static void ApplyLight(ResourceDictionary r)
@@ -89,16 +98,12 @@ public static class ThemeService
         r["BlueCardBorderBrush"]       = new SolidColorBrush(Color.FromArgb("#93C5FD"));
         r["InputBorderBrush"]          = new SolidColorBrush(Color.FromArgb("#C4B8FF"));
         r["EstimateButtonStroke"]      = new SolidColorBrush(Color.FromArgb("#A78BFA"));
-        r["EstimateButtonBrush"]       = MakeGradient("#7C3AED", "#2563EB");
+        r["EstimateButtonBrush"]       = EstimateGradient;
     }
 
     private static LinearGradientBrush MakeGradient(string from, string to)
     {
-        var brush = new LinearGradientBrush
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint   = new Point(1, 0),
-        };
+        var brush = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 0) };
         brush.GradientStops.Add(new GradientStop { Color = Color.FromArgb(from), Offset = 0f });
         brush.GradientStops.Add(new GradientStop { Color = Color.FromArgb(to),   Offset = 1f });
         return brush;

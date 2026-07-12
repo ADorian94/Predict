@@ -18,8 +18,9 @@ public class AppSettingsService
     {
         get
         {
-            var v = Preferences.Default.Get(AppConstants.PrefTheme, AppConstants.ThemeDark);
-            return v == AppConstants.ThemeLight ? v : AppConstants.ThemeDark;
+            var saved = Preferences.Default.Get(AppConstants.PrefTheme, AppConstants.ThemeDark);
+            // Guard against stale values from older app versions that had more themes
+            return saved == AppConstants.ThemeLight ? saved : AppConstants.ThemeDark;
         }
         set => Preferences.Default.Set(AppConstants.PrefTheme, value);
     }
