@@ -9,7 +9,7 @@ namespace Predict.ViewModels;
 public partial class ResultViewModel : ObservableObject
 {
     private const string InterstitialId = "ca-app-pub-3940256099942544/1033173712";
-    private static int _backCount = 0;
+    private static int _exitCount = 0;
 
     [ObservableProperty]
     private OneRmResult? _result;
@@ -102,11 +102,10 @@ public partial class ResultViewModel : ObservableObject
             });
     }
 
-    [RelayCommand]
-    private static async Task GoBack()
+    private static async Task TryShowInterstitialAsync()
     {
-        _backCount++;
-        if (_backCount % 3 == 0 && CrossMauiMTAdmob.Current.IsInterstitialLoaded())
+        _exitCount++;
+        if (_exitCount % 3 == 0 && CrossMauiMTAdmob.Current.IsInterstitialLoaded())
         {
             var tcs = new TaskCompletionSource();
             void OnClosed(object? s, EventArgs e)
@@ -119,10 +118,19 @@ public partial class ResultViewModel : ObservableObject
             await tcs.Task;
             CrossMauiMTAdmob.Current.LoadInterstitial(InterstitialId);
         }
+    }
+
+    [RelayCommand]
+    private static async Task GoBack()
+    {
+        await TryShowInterstitialAsync();
         await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]
-    private static async Task NewEstimation() =>
+    private static async Task NewEstimation()
+    {
+        await TryShowInterstitialAsync();
         await Shell.Current.GoToAsync("//MainPage");
+    }
 }
