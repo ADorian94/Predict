@@ -4,9 +4,57 @@
              xmlns:shapes="clr-namespace:Microsoft.Maui.Controls.Shapes;assembly=Microsoft.Maui.Controls"
              xmlns:vm="clr-namespace:Predict.ViewModels"
              xmlns:models="clr-namespace:Predict.Models"
+             xmlns:local="clr-namespace:Predict"
+             xmlns:admob="clr-namespace:Plugin.MauiMtAdmob.Controls;assembly=Plugin.MauiMtAdmob"
              x:Class="Predict.HistoryPage"
              BackgroundColor="{DynamicResource PageBackground}"
              Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <local:HistoryItemTemplateSelector x:Key="ItemSelector">
+
+            <local:HistoryItemTemplateSelector.HistoryTemplate>
+                <DataTemplate x:DataType="models:HistoryEntry">
+                    <Border Padding="18,14" StrokeThickness="1.5" Margin="0,0,0,12"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            Stroke="{DynamicResource CardBorderBrush}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.OpenEntryCommand}"
+                                CommandParameter="{Binding .}"/>
+                        </Border.GestureRecognizers>
+                        <Border.StrokeShape><shapes:RoundRectangle CornerRadius="18"/></Border.StrokeShape>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+                                <Label Text="{Binding DateDisplay}"
+                                       FontSize="11" FontAttributes="Bold"
+                                       TextColor="{DynamicResource LabelMuted}" CharacterSpacing="1"/>
+                                <Label Text="{Binding InputDisplay}"
+                                       FontSize="16" FontAttributes="Bold"
+                                       TextColor="{DynamicResource TextPrimary}"/>
+                                <Label Text="{Binding ResultDisplay}"
+                                       FontSize="11" TextColor="{DynamicResource LabelSubtitle}"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="&#xE5CC;"
+                                   FontFamily="MaterialIcons"
+                                   FontSize="20" TextColor="{DynamicResource LabelMuted}"
+                                   VerticalOptions="Center" Margin="8,0,0,0"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </local:HistoryItemTemplateSelector.HistoryTemplate>
+
+            <local:HistoryItemTemplateSelector.AdTemplate>
+                <DataTemplate x:DataType="models:AdPlaceholder">
+                    <admob:AdMMTAdView
+                        AdsId="ca-app-pub-3940256099942544/6300978111"
+                        HeightRequest="60"
+                        Margin="0,0,0,12"/>
+                </DataTemplate>
+            </local:HistoryItemTemplateSelector.AdTemplate>
+
+        </local:HistoryItemTemplateSelector>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*" Padding="20,4,20,16">
 
@@ -34,43 +82,14 @@
 
         <!-- Animated list wrapper -->
         <Grid x:Name="ListWrapper" Grid.Row="1" Opacity="0" TranslationY="30">
-            <CollectionView ItemsSource="{Binding Entries}" x:Name="HistoryList">
+            <CollectionView ItemsSource="{Binding Entries}"
+                            ItemTemplate="{StaticResource ItemSelector}">
                 <CollectionView.EmptyView>
                     <Label Text="No history yet."
                            FontSize="14" TextColor="{DynamicResource LabelMuted}"
                            HorizontalTextAlignment="Center"
                            Margin="0,32,0,0"/>
                 </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:HistoryEntry">
-                        <Border Padding="18,14" StrokeThickness="1.5" Margin="0,0,0,12"
-                                Background="{DynamicResource CardBackgroundBrush}"
-                                Stroke="{DynamicResource CardBorderBrush}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding Source={x:Reference HistoryList}, Path=BindingContext.OpenEntryCommand}"
-                                    CommandParameter="{Binding .}"/>
-                            </Border.GestureRecognizers>
-                            <Border.StrokeShape><shapes:RoundRectangle CornerRadius="18"/></Border.StrokeShape>
-                            <Grid ColumnDefinitions="*,Auto">
-                                <VerticalStackLayout Grid.Column="0" Spacing="4">
-                                    <Label Text="{Binding DateDisplay}"
-                                           FontSize="11" FontAttributes="Bold"
-                                           TextColor="{DynamicResource LabelMuted}" CharacterSpacing="1"/>
-                                    <Label Text="{Binding InputDisplay}"
-                                           FontSize="16" FontAttributes="Bold"
-                                           TextColor="{DynamicResource TextPrimary}"/>
-                                    <Label Text="{Binding ResultDisplay}"
-                                           FontSize="11" TextColor="{DynamicResource LabelSubtitle}"/>
-                                </VerticalStackLayout>
-                                <Label Grid.Column="1" Text="&#xE5CC;"
-                                       FontFamily="MaterialIcons"
-                                       FontSize="20" TextColor="{DynamicResource LabelMuted}"
-                                       VerticalOptions="Center" Margin="8,0,0,0"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
             </CollectionView>
         </Grid>
 

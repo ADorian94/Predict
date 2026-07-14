@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Plugin.MauiMtAdmob;
 using Predict.Services;
 using Predict.ViewModels;
 
@@ -11,6 +12,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiMTAdmob()
             .UseSentry(options =>
             {
                 options.Dsn = "https://76fa6d265bfa8411c5e7f0d0146e39db@o4511709623877632.ingest.de.sentry.io/4511709746495568";

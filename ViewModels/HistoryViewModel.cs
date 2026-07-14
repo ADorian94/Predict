@@ -8,15 +8,32 @@ namespace Predict.ViewModels;
 
 public partial class HistoryViewModel : ObservableObject
 {
+    private const int AdEvery = 4;
+
     private readonly ResultContext _resultContext;
 
     [ObservableProperty]
-    private ObservableCollection<HistoryEntry> _entries = [];
+    private ObservableCollection<object> _entries = [];
 
     public HistoryViewModel(ResultContext resultContext)
     {
         _resultContext = resultContext;
-        Entries = new ObservableCollection<HistoryEntry>(HistoryService.Load());
+        LoadEntries();
+    }
+
+    private void LoadEntries()
+    {
+        var raw = HistoryService.Load();
+        var mixed = new List<object>();
+        int count = 0;
+        foreach (var entry in raw)
+        {
+            mixed.Add(entry);
+            count++;
+            if (count % AdEvery == 0)
+                mixed.Add(new AdPlaceholder());
+        }
+        Entries = new ObservableCollection<object>(mixed);
     }
 
     [RelayCommand]
