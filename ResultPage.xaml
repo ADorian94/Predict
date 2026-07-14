@@ -4,6 +4,7 @@
              xmlns:shapes="clr-namespace:Microsoft.Maui.Controls.Shapes;assembly=Microsoft.Maui.Controls"
              xmlns:vm="clr-namespace:Predict.ViewModels"
              xmlns:models="clr-namespace:Predict.Models"
+             xmlns:admob="clr-namespace:Plugin.MauiMtAdmob.Controls;assembly=Plugin.MauiMtAdmob"
              x:Class="Predict.ResultPage"
              BackgroundColor="{DynamicResource PageBackground}"
              Shell.NavBarIsVisible="False">
@@ -93,6 +94,14 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- Ad banner below Best Estimate -->
+                <Grid HeightRequest="60">
+                    <admob:AdMMTAdView
+                        AdsId="ca-app-pub-3940256099942544/6300978111"
+                        HorizontalOptions="FillAndExpand"
+                        VerticalOptions="FillAndExpand"/>
+                </Grid>
+
                 <!-- Formula comparison -->
                 <Border x:Name="FormulasCard" Padding="18,16" StrokeThickness="1.5"
                         Opacity="0" TranslationY="40"
@@ -160,6 +169,14 @@
                         </CollectionView>
                     </VerticalStackLayout>
                 </Border>
+
+                <!-- Ad banner above New Estimation button -->
+                <Grid HeightRequest="60">
+                    <admob:AdMMTAdView
+                        AdsId="ca-app-pub-3940256099942544/6300978111"
+                        HorizontalOptions="FillAndExpand"
+                        VerticalOptions="FillAndExpand"/>
+                </Grid>
 
                 <!-- New prediction button -->
                 <Border StrokeThickness="1.5" HeightRequest="52" Margin="0,4,0,0"
