@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" > keystore.b64
+          certutil -decode keystore.b64 predict-release.jks
+
+      - name: Publish signed APK
+        run: >
+          dotnet publish Predict.csproj
+          -c Release -f net9.0-android
+          -p:AndroidSigningKeyStore=predict-release.jks
+          -p:AndroidSigningKeyAlias=${{ secrets.KEY_ALIAS }}
+          -p:AndroidSigningKeyPass=${{ secrets.KEY_PASS }}
+          -p:AndroidSigningStorePass=${{ secrets.STORE_PASS }}
+          -o publish-out
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: predict-${{ github.ref_name }}
+          path: publish-out/**/*-Signed.apk
