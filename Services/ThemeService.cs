@@ -38,24 +38,49 @@ public static class ThemeService
         var r = Application.Current!.Resources;
         if (light) ApplyLight(r); else ApplyDark(r);
 #if ANDROID
-        ApplyStatusBar(light);
+        ApplyStatusBar(light, (Color)r["PageBackground"]);
 #endif
     }
 
 #if ANDROID
-    private static void ApplyStatusBar(bool light)
+    // Called from MainActivity.OnCreate to guarantee status bar is styled on cold start
+    public static void ApplyStatusBarFromSaved()
+    {
+        bool light = _current == AppConstants.ThemeLight;
+        var bg = Application.Current?.Resources.TryGetValue("PageBackground", out var obj) == true && obj is Color c
+            ? c
+            : Color.FromArgb(light ? "#F4F5FF" : "#08081C");
+        ApplyStatusBar(light, bg);
+    }
+
+    private static void ApplyStatusBar(bool light, Color pageBackground)
     {
         var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
         if (activity?.Window == null) return;
 
-        activity.Window.SetStatusBarColor(Android.Graphics.Color.ParseColor(light ? "#F4F5FF" : "#08081C"));
+        activity.Window.SetStatusBarColor(Android.Graphics.Color.Argb(
+            (int)(pageBackground.Alpha * 255),
+            (int)(pageBackground.Red   * 255),
+            (int)(pageBackground.Green * 255),
+            (int)(pageBackground.Blue  * 255)));
 
-        var flags = (Android.Views.SystemUiFlags)activity.Window.DecorView.SystemUiFlags;
-        if (light)
-            flags |= Android.Views.SystemUiFlags.LightStatusBar;
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+        {
+            // APPEARANCE_LIGHT_STATUS_BARS = 8 (WindowInsetsController constant)
+            const int lightFlag = 8;
+            activity.Window.InsetsController?.SetSystemBarsAppearance(light ? lightFlag : 0, lightFlag);
+        }
         else
-            flags &= ~Android.Views.SystemUiFlags.LightStatusBar;
-        activity.Window.DecorView.SystemUiFlags = flags;
+        {
+#pragma warning disable CS0618
+            var flags = (Android.Views.SystemUiFlags)activity.Window.DecorView.SystemUiFlags;
+            if (light)
+                flags |= Android.Views.SystemUiFlags.LightStatusBar;
+            else
+                flags &= ~Android.Views.SystemUiFlags.LightStatusBar;
+            activity.Window.DecorView.SystemUiFlags = flags;
+#pragma warning restore CS0618
+        }
     }
 #endif
 
