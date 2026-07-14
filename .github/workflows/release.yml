@@ -24,18 +24,19 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" > keystore.b64
           certutil -decode keystore.b64 predict-release.jks
 
-      - name: Publish signed APK
+      - name: Publish signed AAB
         run: >
           dotnet publish Predict.csproj
           -c Release -f net9.0-android
+          -p:AndroidPackageFormats=aab
           -p:AndroidSigningKeyStore=predict-release.jks
           -p:AndroidSigningKeyAlias=${{ secrets.KEY_ALIAS }}
           -p:AndroidSigningKeyPass=${{ secrets.KEY_PASS }}
           -p:AndroidSigningStorePass=${{ secrets.STORE_PASS }}
           -o publish-out
 
-      - name: Upload APK artifact
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
           name: predict-${{ github.ref_name }}
-          path: publish-out/**/*-Signed.apk
+          path: publish-out/**/*.aab
