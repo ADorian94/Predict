@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Plugin.MauiMtAdmob;
 using Predict.Models;
@@ -8,7 +8,7 @@ namespace Predict.ViewModels;
 
 public partial class ResultViewModel : ObservableObject
 {
-    private const string InterstitialId = "ca-app-pub-3940256099942544/1033173712";
+    private const string InterstitialId = "ca-app-pub-3012910791046560/3511582164";
     private static int _exitCount = 0;
 
     [ObservableProperty]
@@ -88,7 +88,7 @@ public partial class ResultViewModel : ObservableObject
         if (Result is null) return;
         var lines = string.Join("\n", Formulas.Select(f => $"  {f.Name}: {f.ResultDisplay}"));
         var text =
-            $"Predict — 1RM Estimate\n" +
+            $"Predict â€” 1RM Estimate\n" +
             $"Weight: {WeightDisplay} | Reps: {Result.Reps} | RPE: {Result.Rpe:0.0}\n\n" +
             $"Best estimate: {AnimatedBestEstimate}\n\n" +
             $"Formulas:\n{lines}";

@@ -12,7 +12,10 @@ public class MainActivity : MauiAppCompatActivity
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
-        CrossMauiMTAdmob.Current.Init(this, "ca-app-pub-3940256099942544~3347511713");
+        CrossMauiMTAdmob.Current.Init(
+            this,
+            "ca-app-pub-3012910791046560~7179364438",
+            initialiseConsentAtStartup: true);
         ThemeService.ApplyStatusBarFromSaved();
     }
 }
