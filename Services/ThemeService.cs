@@ -37,7 +37,27 @@ public static class ThemeService
 
         var r = Application.Current!.Resources;
         if (light) ApplyLight(r); else ApplyDark(r);
+#if ANDROID
+        ApplyStatusBar(light);
+#endif
     }
+
+#if ANDROID
+    private static void ApplyStatusBar(bool light)
+    {
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
+        if (activity?.Window == null) return;
+
+        activity.Window.SetStatusBarColor(Android.Graphics.Color.ParseColor(light ? "#F4F5FF" : "#08081C"));
+
+        var flags = (Android.Views.SystemUiFlags)activity.Window.DecorView.SystemUiFlags;
+        if (light)
+            flags |= Android.Views.SystemUiFlags.LightStatusBar;
+        else
+            flags &= ~Android.Views.SystemUiFlags.LightStatusBar;
+        activity.Window.DecorView.SystemUiFlags = flags;
+    }
+#endif
 
     private static void ApplyDark(ResourceDictionary r)
     {
