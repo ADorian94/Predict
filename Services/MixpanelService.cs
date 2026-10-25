@@ -5,10 +5,19 @@ namespace Predict.Services;
 
 public static class MixpanelService
 {
+    public const string AnalyticsDisclosure =
+        "Optional: send usage events (app_opened, estimate_calculated, history_opened, settings_opened, "
+        + "result_shared, unit_changed, rounding_changed, theme_changed), unit/rounding/theme preferences, "
+        + "a random installation ID (pseudonymous), app version, Android platform and event time to Mixpanel EU. "
+        + "No weight, reps, RPE or estimates are sent. You can use every feature without analytics. "
+        + "Change this anytime in Settings. This is separate from advertising consent.";
+
     private const string Token  = "89db93a097fc84d4900ab50048a2f234";
     private const string ApiUrl = "https://api-eu.mixpanel.com/track";
 
     private const string ConsentKey = "analytics_consent_v1";
+    private const string DecisionKey = "analytics_decision_version";
+    private const int DecisionVersion = 1;
     private static readonly HttpClient _http = new();
 
     private static readonly object ConsentGate = new();
@@ -22,7 +31,7 @@ public static class MixpanelService
 
     public static bool IsAnalyticsEnabled
     {
-        get { lock (ConsentGate) return Preferences.Default.Get(ConsentKey, false); }
+        get { lock (ConsentGate) return HasDecisionLocked && Preferences.Default.Get(ConsentKey, false); }
     }
 
     public static void SetAnalyticsEnabled(bool enabled)
@@ -30,6 +39,7 @@ public static class MixpanelService
         ConsentGeneration? withdrawn = null;
         lock (ConsentGate)
         {
+            Preferences.Default.Set(DecisionKey, DecisionVersion);
             Preferences.Default.Set(ConsentKey, enabled);
             if (!enabled)
             {
@@ -51,6 +61,36 @@ public static class MixpanelService
             }
         }
     }
+
+    private static bool _promptOpen;
+
+    public static async Task EnsureAnalyticsConsentAsync(Func<Task<bool>> prompt)
+    {
+        lock (ConsentGate)
+        {
+            if (HasDecisionLocked || _promptOpen) return;
+            // A legacy enabled flag is not evidence of an informed decision.
+            Preferences.Default.Set(ConsentKey, false);
+            Preferences.Default.Remove("mp_device_id");
+            _promptOpen = true;
+        }
+        try
+        {
+            var enabled = await prompt();
+            lock (ConsentGate)
+            {
+                // Any explicit Settings choice made while the dialog was open wins.
+                if (HasDecisionLocked) return;
+                Preferences.Default.Set(ConsentKey, enabled);
+                Preferences.Default.Set(DecisionKey, DecisionVersion);
+                if (!enabled) Preferences.Default.Remove("mp_device_id");
+            }
+        }
+        catch { /* No decision on UI failure; keep optional analytics off and retry later. */ }
+        finally { lock (ConsentGate) _promptOpen = false; }
+    }
+
+    private static bool HasDecisionLocked => Preferences.Default.Get(DecisionKey, 0) == DecisionVersion;
 
     private static string DeviceId
     {
@@ -82,7 +122,7 @@ public static class MixpanelService
             string deviceId;
             lock (ConsentGate)
             {
-                if (!Preferences.Default.Get(ConsentKey, false))
+                if (!HasDecisionLocked || !Preferences.Default.Get(ConsentKey, false))
                 {
                     Preferences.Default.Remove("mp_device_id");
                     return;

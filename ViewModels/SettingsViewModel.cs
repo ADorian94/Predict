@@ -8,6 +8,13 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly AppSettingsService _settings;
 
+    [ObservableProperty]
+    private bool _isAnalyticsEnabled;
+
+    public string AnalyticsDisclosure => MixpanelService.AnalyticsDisclosure;
+
+    partial void OnIsAnalyticsEnabledChanged(bool value) => MixpanelService.SetAnalyticsEnabled(value);
+
     // ── Unit toggle ──────────────────────────────────────────────
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(KgBackground))]
@@ -118,6 +125,7 @@ public partial class SettingsViewModel : ObservableObject
         _isLbs        = settings.IsLbs;
         _isRounded    = settings.IsRounded;
         _currentTheme = settings.Theme;
+        _isAnalyticsEnabled = MixpanelService.IsAnalyticsEnabled;
     }
 
     [RelayCommand]

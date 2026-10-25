@@ -42,4 +42,9 @@
 	</ItemGroup>
 
 
+	<ItemGroup>
+		<!-- Repository-local test executables must not be compiled into the Android app. -->
+		<Compile Remove="tests\**\*.cs" />
+	</ItemGroup>
+
 </Project>

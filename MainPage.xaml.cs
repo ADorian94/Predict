@@ -15,6 +15,10 @@ public partial class MainPage : ContentPage
         base.OnAppearing();
         (BindingContext as ViewModels.MainViewModel)?.RefreshUnit();
 
+        await Services.MixpanelService.EnsureAnalyticsConsentAsync(() =>
+            DisplayAlert("Optional usage analytics",
+                Services.MixpanelService.AnalyticsDisclosure, "Allow", "No thanks"));
+
         if (_hasAppeared) return;
         _hasAppeared = true;
 

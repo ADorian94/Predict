@@ -155,6 +155,24 @@
                     </Grid>
                 </Border>
 
+                <!-- Optional usage analytics: the same disclosure as first launch. -->
+                <Label Text="OPTIONAL ANALYTICS" FontSize="11" FontAttributes="Bold"
+                       TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2" Margin="4,0,0,0"/>
+                <Border Padding="18,16" StrokeThickness="1.5"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
+                    <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Label Text="Allow usage analytics" TextColor="{DynamicResource TextPrimary}"
+                                   VerticalOptions="Center"/>
+                            <Switch Grid.Column="1" IsToggled="{Binding IsAnalyticsEnabled, Mode=TwoWay}"
+                                    SemanticProperties.Description="Allow optional usage analytics"/>
+                        </Grid>
+                        <Label Text="{Binding AnalyticsDisclosure}" FontSize="12"
+                               TextColor="{DynamicResource LabelMuted}"/>
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
         </ScrollView>
 

@@ -23,20 +23,25 @@
 <body>
   <div class="container">
     <h1>Predict</h1>
-    <p class="subtitle">1RM Estimator &mdash; Privacy Policy &mdash; Last updated: 2026-07-16</p>
+    <p class="subtitle">1RM Estimator &mdash; Privacy Policy &mdash; Last updated: 2026-10-25</p>
 
     <div class="card">
-      <p><strong>Summary:</strong> Predict does not collect, store, or transmit personal data to external servers. All user-entered data stays on your device.</p>
+      <p><strong>Summary:</strong> Your entered workout values and estimation history stay on your device. Optional usage analytics are off by default and require your explicit choice. Crash reporting and advertising are described separately below.</p>
     </div>
 
     <h2>1. Data stored on your device</h2>
-    <p>Predict stores the following data <strong>locally on your device only</strong>:</p>
+    <p>Predict stores the following data <strong>on your device</strong>. Workout values and history remain local; selected preferences may also be sent only if you allow the optional analytics described below:</p>
     <ul>
       <li>Last entered weight, reps, and RPE values (to pre-fill the form)</li>
       <li>Unit preference (kg / lbs) and rounding preference</li>
       <li>Estimation history (up to 50 entries)</li>
     </ul>
-    <p>This data is not transmitted to any server and is not accessible to the developer.</p>
+    <p>Entered weight, reps, RPE and estimation history are not sent through usage analytics. If you allow analytics, preference values may be sent as described below.</p>
+
+    <h2>Optional usage analytics</h2>
+    <p>On first launch (or the first launch after upgrading from a version without a recorded decision), you can choose <strong>Allow</strong> or <strong>No thanks</strong>. Your decision is remembered; refusing does not limit app features or trigger repeated requests. You can enable or disable usage analytics anytime in Settings. This choice is separate from advertising consent.</p>
+    <p>Only after Allow, Predict sends the usage event names app_opened, estimate_calculated, history_opened, settings_opened, result_shared, unit_changed, rounding_changed and theme_changed to <strong>Mixpanel EU</strong> (api-eu.mixpanel.com), with unit, rounding and theme preferences, a random installation ID, app version, Android platform and event time. The random ID is <strong>pseudonymous</strong>, not anonymous. No weight, reps, RPE, calculated estimates or estimation history are included.</p>
+    <p>Disabling analytics blocks new requests, cancels pending work and removes the local analytics ID. Data already transmitted cannot be retracted by the switch. Enabling again uses a new random ID. Legal basis: consent. Processor: <a href="https://mixpanel.com/legal/privacy-policy/" target="_blank">Mixpanel</a>.</p>
 
     <h2>2. Crash reporting</h2>
     <p>Predict uses <strong>Sentry</strong> for anonymous crash and error reporting.</p>
@@ -58,14 +63,14 @@
     </ul>
 
     <h2>4. No account required</h2>
-    <p>Predict does not require registration or login. No email address, name, or other personal identifier is collected.</p>
+    <p>Predict does not require registration or login. No email address or name is required. Optional analytics uses the pseudonymous installation ID described above.</p>
 
     <h2>5. Children</h2>
     <p>Predict is intended for users aged 16 and older. The app is not directed at children and does not knowingly collect data from minors.</p>
 
     <h2>6. Your rights (GDPR)</h2>
-    <p>If you are located in the European Economic Area, you have the right to access, correct, or delete personal data. Since Predict stores data only on your device, you can delete all app data via Android Settings &rarr; Apps &rarr; Predict &rarr; Clear Data.</p>
-    <p>For crash report data held by Sentry, contact us using the link below.</p>
+    <p>If you are located in the European Economic Area, you have the right to access, correct, or delete personal data. You can delete locally stored app data via Android Settings &rarr; Apps &rarr; Predict &rarr; Clear Data.</p>
+    <p>For requests concerning data held by Sentry or optional Mixpanel analytics, contact us using the link below.</p>
 
     <h2>7. Contact</h2>
     <p>For privacy-related questions, please use the <a href="https://github.com/ADorian94/Predict/issues" target="_blank">GitHub Issues</a> page.</p>
