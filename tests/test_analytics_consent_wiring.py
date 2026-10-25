@@ -16,16 +16,22 @@ class AnalyticsConsentWiringTests(unittest.TestCase):
         self.assertIn('DisplayAlert("Optional usage analytics",', text)
         self.assertIn('Services.MixpanelService.AnalyticsDisclosure, "Allow", "No thanks")', text)
 
-    def test_settings_switch_is_two_way_and_initialization_does_not_write_consent(self):
+    def test_settings_cards_match_existing_design_and_do_not_write_on_initialization(self):
         text = source("ViewModels/SettingsViewModel.cs")
-        self.assertIn("private bool _isAnalyticsEnabled;", text)
         self.assertIn("_isAnalyticsEnabled = MixpanelService.IsAnalyticsEnabled;", text)
-        self.assertRegex(text, r"OnIsAnalyticsEnabledChanged\(bool value\)\s*=>\s*MixpanelService.SetAnalyticsEnabled\(value\)")
         root = ET.fromstring(source("SettingsPage.xaml"))
-        switches = [e for e in root.iter() if e.tag.endswith("}Switch")]
-        self.assertEqual(len(switches), 1)
-        self.assertEqual(switches[0].get("IsToggled"), "{Binding IsAnalyticsEnabled, Mode=TwoWay}")
-        self.assertIn('Text="{Binding AnalyticsDisclosure}"', source("SettingsPage.xaml"))
+        self.assertFalse(any(e.tag.endswith("}Switch") for e in root.iter()))
+        for state, command in (("Enabled", "EnableAnalyticsCommand"), ("Disabled", "DisableAnalyticsCommand")):
+            cards = [e for e in root.iter() if e.tag.endswith("}Border")
+                     and e.get("Background") == "{Binding Analytics" + state + "Background}"]
+            self.assertEqual(len(cards), 1)
+            card = cards[0]
+            self.assertEqual(card.get("Padding"), "0,16")
+            self.assertEqual(card.get("StrokeThickness"), "1.5")
+            self.assertTrue(any(e.get("Command") == "{Binding " + command + "}" for e in card.iter()))
+            self.assertTrue(any(e.get("CornerRadius") == "16" for e in card.iter()))
+        self.assertIn("ShowAnalyticsDetailsCommand", source("SettingsPage.xaml"))
+        self.assertNotIn('Text="{Binding AnalyticsDisclosure}"', source("SettingsPage.xaml"))
 
     def test_privacy_page_discloses_optional_pseudonymous_analytics(self):
         text = source("docs/index.html")

@@ -9,11 +9,36 @@ public partial class SettingsViewModel : ObservableObject
     private readonly AppSettingsService _settings;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AnalyticsEnabledBackground))]
+    [NotifyPropertyChangedFor(nameof(AnalyticsDisabledBackground))]
+    [NotifyPropertyChangedFor(nameof(AnalyticsEnabledBorder))]
+    [NotifyPropertyChangedFor(nameof(AnalyticsDisabledBorder))]
+    [NotifyPropertyChangedFor(nameof(AnalyticsEnabledTextColor))]
+    [NotifyPropertyChangedFor(nameof(AnalyticsDisabledTextColor))]
     private bool _isAnalyticsEnabled;
 
-    public string AnalyticsDisclosure => MixpanelService.AnalyticsDisclosure;
+    public Brush AnalyticsEnabledBackground => IsAnalyticsEnabled ? ActiveBg : InactiveBg;
+    public Brush AnalyticsDisabledBackground => IsAnalyticsEnabled ? InactiveBg : ActiveBg;
+    public Brush AnalyticsEnabledBorder => IsAnalyticsEnabled ? ActiveBorder : InactiveBorder;
+    public Brush AnalyticsDisabledBorder => IsAnalyticsEnabled ? InactiveBorder : ActiveBorder;
+    public Color AnalyticsEnabledTextColor => IsAnalyticsEnabled ? ActiveText : InactiveText;
+    public Color AnalyticsDisabledTextColor => IsAnalyticsEnabled ? InactiveText : ActiveText;
 
     partial void OnIsAnalyticsEnabledChanged(bool value) => MixpanelService.SetAnalyticsEnabled(value);
+    [RelayCommand] private void EnableAnalytics() => SetAnalyticsChoice(true);
+    [RelayCommand] private void DisableAnalytics() => SetAnalyticsChoice(false);
+
+    [RelayCommand]
+    private static async Task ShowAnalyticsDetails() =>
+        await Shell.Current.DisplayAlert("Usage analytics", MixpanelService.AnalyticsDisclosure, "OK");
+
+    private void SetAnalyticsChoice(bool enabled)
+    {
+        if (IsAnalyticsEnabled == enabled)
+            MixpanelService.SetAnalyticsEnabled(enabled);
+        else
+            IsAnalyticsEnabled = enabled;
+    }
 
     // ── Unit toggle ──────────────────────────────────────────────
     [ObservableProperty]
@@ -116,6 +141,12 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(RawBorder));
         OnPropertyChanged(nameof(RoundedTextColor));
         OnPropertyChanged(nameof(RawTextColor));
+        OnPropertyChanged(nameof(AnalyticsEnabledBackground));
+        OnPropertyChanged(nameof(AnalyticsDisabledBackground));
+        OnPropertyChanged(nameof(AnalyticsEnabledBorder));
+        OnPropertyChanged(nameof(AnalyticsDisabledBorder));
+        OnPropertyChanged(nameof(AnalyticsEnabledTextColor));
+        OnPropertyChanged(nameof(AnalyticsDisabledTextColor));
     }
 
     // ── Init & navigation ────────────────────────────────────────

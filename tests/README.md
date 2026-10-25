@@ -3,6 +3,7 @@
 Run from the repository root with the .NET 9 SDK and Python available:
 
 ```sh
+dotnet run --project tests/Settings/Predict.SettingsTests.csproj -c Release
 dotnet run --project tests/Privacy/Predict.PrivacyTests.csproj -c Release
 dotnet run --project tests/Rpe/Predict.RpeTests.csproj -c Release
 dotnet run --project tests/Predict.BannerTests.csproj -c Release -p:PredictTestAds=true
