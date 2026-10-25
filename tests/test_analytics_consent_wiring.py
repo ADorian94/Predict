@@ -9,12 +9,22 @@ def source(path):
     return (ROOT / path).read_text(encoding="utf-8-sig")
 
 class AnalyticsConsentWiringTests(unittest.TestCase):
-    def test_main_page_prompts_even_on_return_after_prompt_failure(self):
+    def test_main_page_schedules_optional_prompt_on_loaded_ui(self):
+        # Behavior (pending prompt, navigation, retry) is exercised by tests/Startup,
+        # which compiles the actual MainPage class. Only public UI wiring lives here.
         text = source("MainPage.xaml.cs")
+        self.assertIn("Loaded += (_, _) => QueueAnalyticsConsent();", text)
+        self.assertIn("Dispatcher.Dispatch(async () =>", text)
+        self.assertIn("if (!_isAppearing || !IsLoaded", text)
         self.assertIn("await Services.MixpanelService.EnsureAnalyticsConsentAsync", text)
-        self.assertLess(text.index("EnsureAnalyticsConsentAsync"), text.index("if (_hasAppeared) return"))
         self.assertIn('DisplayAlert("Optional usage analytics",', text)
         self.assertIn('Services.MixpanelService.AnalyticsDisclosure, "Allow", "No thanks")', text)
+
+    def test_maui_app_excludes_nested_test_xaml_fixtures(self):
+        root = ET.fromstring(source("Predict.csproj"))
+        excluded = [e.get("Remove", "").replace("\\", "/")
+                    for e in root.iter("MauiXaml")]
+        self.assertIn("tests/**/*.xaml", excluded)
 
     def test_settings_cards_match_existing_design_and_do_not_write_on_initialization(self):
         text = source("ViewModels/SettingsViewModel.cs")

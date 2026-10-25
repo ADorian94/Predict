@@ -3,6 +3,7 @@
 Run from the repository root with the .NET 9 SDK and Python available:
 
 ```sh
+dotnet run --project tests/Startup/Predict.StartupTests.csproj -c Release
 dotnet run --project tests/Settings/Predict.SettingsTests.csproj -c Release
 dotnet run --project tests/Privacy/Predict.PrivacyTests.csproj -c Release
 dotnet run --project tests/Rpe/Predict.RpeTests.csproj -c Release
@@ -10,6 +11,8 @@ dotnet run --project tests/Predict.BannerTests.csproj -c Release -p:PredictTestA
 dotnet run --project tests/Predict.BannerTests.csproj -c Release -p:PredictTestAds=false
 python -m unittest discover -s tests -p 'test_*wiring.py' -v
 ```
+
+The startup harness links the complete production MainPage and reads its actual XAML card visibility. Platform/dispatcher/animation/consent boundaries are controllable doubles: tests cover pending first prompt versus recorded decision, native Loaded scheduling, navigation, failure/retry and animation failure. This is not a native Android renderer or phone-popup verification.
 
 The privacy console tests link the production Mixpanel service and replace only platform preferences/app information and HTTP transport. They do not send live Mixpanel events. They exercise explicit first-run decisions, legacy unknown-consent preferences, remembered refusal, prompt failure/retry, competing prompts/settings choices, filtering, identifier rotation and cancellation.
 

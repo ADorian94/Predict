@@ -45,6 +45,7 @@
 	<ItemGroup>
 		<!-- Repository-local test executables must not be compiled into the Android app. -->
 		<Compile Remove="tests\**\*.cs" />
+		<MauiXaml Remove="tests\**\*.xaml" />
 	</ItemGroup>
 
 </Project>
