@@ -5,6 +5,7 @@
              xmlns:vm="clr-namespace:Predict.ViewModels"
              xmlns:models="clr-namespace:Predict.Models"
              xmlns:admob="clr-namespace:Plugin.MauiMtAdmob.Controls;assembly=Plugin.MauiMtAdmob"
+             xmlns:services="clr-namespace:Predict.Services"
              x:Class="Predict.ResultPage"
              BackgroundColor="{DynamicResource PageBackground}"
              Shell.NavBarIsVisible="False">
@@ -91,13 +92,19 @@
                         <Label Text="{Binding RoundingNote}"
                                FontSize="11" TextColor="{DynamicResource LabelMuted}"
                                HorizontalTextAlignment="Center"/>
+                        <Label Text="{Binding Result.RpeAvailabilityNote}"
+                               IsVisible="{Binding Result.IsRpeUnavailable}"
+                               FontSize="11" TextColor="{DynamicResource LabelSubtitle}"
+                               LineBreakMode="WordWrap" HorizontalTextAlignment="Center"/>
                     </VerticalStackLayout>
                 </Border>
 
                 <!-- Ad banner below Best Estimate -->
                 <Grid HeightRequest="60">
-                    <admob:AdMMTAdView
-                        AdsId="ca-app-pub-3012910791046560/3302176099"
+                    <admob:MTAdView
+                        AdsId="{x:Static services:AdUnits.Banner}"
+                        AdSize="Banner"
+                        services:BannerAdLifecycle.Observe="True"
                         HorizontalOptions="FillAndExpand"
                         VerticalOptions="FillAndExpand"/>
                 </Grid>
@@ -172,8 +179,10 @@
 
                 <!-- Ad banner above New Estimation button -->
                 <Grid HeightRequest="60">
-                    <admob:AdMMTAdView
-                        AdsId="ca-app-pub-3012910791046560/3302176099"
+                    <admob:MTAdView
+                        AdsId="{x:Static services:AdUnits.Banner}"
+                        AdSize="Banner"
+                        services:BannerAdLifecycle.Observe="True"
                         HorizontalOptions="FillAndExpand"
                         VerticalOptions="FillAndExpand"/>
                 </Grid>

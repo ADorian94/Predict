@@ -8,7 +8,7 @@ namespace Predict.ViewModels;
 
 public partial class ResultViewModel : ObservableObject
 {
-    private const string InterstitialId = "ca-app-pub-3012910791046560/3511582164";
+    private const string InterstitialId = AdUnits.Interstitial;
     private static int _exitCount = 0;
 
     [ObservableProperty]
@@ -54,33 +54,14 @@ public partial class ResultViewModel : ObservableObject
 
     public string EstimationDate => DateTime.Now.ToString("yyyy.MM.dd HH:mm");
 
-    public string RoundingNote => Result?.IsRounded == true
-        ? "(avg of 8 formulas, rounded to 2.5)"
-        : "(avg of 8 formulas)";
+    public string RoundingNote => Result?.RoundingNote ?? string.Empty;
 
     public string WeightDisplay => Result is null ? "" :
         Result.IsLbs
             ? $"{Result.Weight / 0.45359237:0.#} lbs"
             : $"{Result.Weight:0.#} kg";
 
-    public IReadOnlyList<FormulaEntry> Formulas
-    {
-        get
-        {
-            if (Result is null) return [];
-            var u = Result.Unit;
-            return [
-                new("RTS RPE",  $"{Result.RpeTableDisplay:0.0} {u}",  "1RM = weight / intensity%"),
-                new("Epley",    $"{Result.EpleyDisplay:0.0} {u}",     "w*(1 + r/30)"),
-                new("Brzycki",  $"{Result.BrzycziDisplay:0.0} {u}",   "w*36/(37-r)"),
-                new("Lander",   $"{Result.LanderDisplay:0.0} {u}",    "100w/(101.3-2.671r)"),
-                new("Lombardi", $"{Result.LombardiDisplay:0.0} {u}",  "w * r^0.10"),
-                new("Mayhew",   $"{Result.MayhewDisplay:0.0} {u}",    "100w/(52.2+41.9e^-0.055r)"),
-                new("O'Conner", $"{Result.OConnerDisplay:0.0} {u}",   "w*(1 + 0.025r)"),
-                new("Wathan",   $"{Result.WathanDisplay:0.0} {u}",    "100w/(48.8+53.8e^-0.075r)"),
-            ];
-        }
-    }
+    public IReadOnlyList<FormulaEntry> Formulas => Result?.Formulas ?? [];
 
     [RelayCommand]
     private async Task Share()
@@ -90,7 +71,7 @@ public partial class ResultViewModel : ObservableObject
         var text =
             $"Predict â€” 1RM Estimate\n" +
             $"Weight: {WeightDisplay} | Reps: {Result.Reps} | RPE: {Result.Rpe:0.0}\n\n" +
-            $"Best estimate: {AnimatedBestEstimate}\n\n" +
+            $"Best estimate: {AnimatedBestEstimate}\n{RoundingNote}\n{Result.RpeAvailabilityNote}\n\n" +
             $"Formulas:\n{lines}";
 
         MixpanelService.Track("result_shared");

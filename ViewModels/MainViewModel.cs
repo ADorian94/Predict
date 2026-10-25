@@ -136,11 +136,7 @@ public partial class MainViewModel : ObservableObject
 
         MixpanelService.Track("estimate_calculated", new()
         {
-            ["weight_kg"]    = Math.Round(weightKg, 2),
-            ["reps"]         = reps,
-            ["rpe"]          = Rpe,
             ["unit"]         = IsLbs ? "lbs" : "kg",
-            ["best_est_kg"]  = result.BestEstimate,
             ["is_rounded"]   = _settings.IsRounded,
         });
 

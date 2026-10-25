@@ -19,6 +19,10 @@
 		<RuntimeIdentifier>android-arm64</RuntimeIdentifier>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(PredictTestAds)' == 'true'">
+		<DefineConstants>$(DefineConstants);PREDICT_TEST_ADS</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#08081C" />
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#08081C" BaseSize="128,128" />
