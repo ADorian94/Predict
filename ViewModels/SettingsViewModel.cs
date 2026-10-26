@@ -7,6 +7,11 @@ namespace Predict.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly AppSettingsService _settings;
+    private readonly AdsConsentCoordinator _ads;
+    public bool AdvertisingPrivacyRequired => _ads.PrivacyOptionsRequired;
+    [RelayCommand]
+    private void ShowAdvertisingPrivacy() => _ads.ShowPrivacyOptions();
+    public void RefreshAdvertisingPrivacy() => OnPropertyChanged(nameof(AdvertisingPrivacyRequired));
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AnalyticsEnabledBackground))]
@@ -150,8 +155,18 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     // ── Init & navigation ────────────────────────────────────────
-    public SettingsViewModel(AppSettingsService settings)
+    public SettingsViewModel(AppSettingsService settings, AdsConsentCoordinator? ads = null)
     {
+        _ads = ads ?? new AdsConsentCoordinator();
+        var weak = new WeakReference<SettingsViewModel>(this);
+        EventHandler? changed = null;
+        var source = _ads;
+        changed = (_, _) =>
+        {
+            if (weak.TryGetTarget(out var vm)) vm.RefreshAdvertisingPrivacy();
+            else source.Changed -= changed;
+        };
+        _ads.Changed += changed;
         _settings     = settings;
         _isLbs        = settings.IsLbs;
         _isRounded    = settings.IsRounded;

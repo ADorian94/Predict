@@ -7,4 +7,10 @@ public partial class SettingsPage : ContentPage
         InitializeComponent();
         BindingContext = vm;
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is ViewModels.SettingsViewModel vm) vm.RefreshAdvertisingPrivacy();
+    }
 }

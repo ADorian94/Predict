@@ -82,8 +82,13 @@ public partial class MainPage : ContentPage
                 {
                     if (!_isAppearing || !IsLoaded) return;
                     await Services.MixpanelService.EnsureAnalyticsConsentAsync(() =>
-                        DisplayAlert("Optional usage analytics",
-                            Services.MixpanelService.AnalyticsDisclosure, "Allow", "No thanks"));
+                        Services.AdsConsentPresentation.RunAsync(() =>
+                        {
+                            // Recheck after waiting for a separate advertising form.
+                            if (!_isAppearing || !IsLoaded) throw new OperationCanceledException();
+                            return DisplayAlert("Optional usage analytics",
+                                Services.MixpanelService.AnalyticsDisclosure, "Allow", "No thanks");
+                        }));
                 }
                 catch (Exception ex)
                 {

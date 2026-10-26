@@ -30,10 +30,24 @@ internal static class Program
             Console.WriteLine("PASS rejected/throwing dispatcher retries without hiding inputs");
             PopupWaitsForAllEntranceTasks(context);
             Console.WriteLine("PASS popup waits for all entrance animation tasks");
-            Console.WriteLine("Startup tests: 9 passed, 0 failed");
+            PopupWaitsForOtherPrivacyPresentation(context);
+            Console.WriteLine("PASS analytics popup waits for other privacy UI without changing consent state");
+            Console.WriteLine("Startup tests: 10 passed, 0 failed");
             return 0;
         }
         catch (Exception e) { Console.WriteLine("FAIL " + e.Message); return 1; }
+    }
+
+    static void PopupWaitsForOtherPrivacyPresentation(UiContext context)
+    {
+        MixpanelService.Reset();
+        var dismissed = new TaskCompletionSource<bool>();
+        var other = AdsConsentPresentation.RunAsync(() => dismissed.Task);
+        var page = ReadyPage(context); page.Dispatcher.Drain();
+        Check(page.AlertCalls == 0, "analytics overlapped an already presented advertising privacy form");
+        dismissed.SetResult(false);
+        context.Until(() => page.AlertCalls == 1);
+        page.Answer.SetResult(false); context.Flush();
     }
 
     static void PendingConsentDoesNotHideInputs(UiContext context)
@@ -46,6 +60,8 @@ internal static class Program
         page.Dispatcher.Drain();
         Check(page.AlertCalls == 1, "expected one explicit consent popup");
         Check(!page.Answer.Task.IsCompleted, "prompt must still be unresolved");
+        // Complete this test's native popup before the next independent scenario.
+        page.Answer.SetResult(false); context.Flush();
     }
 
     static void PopupWaitsForNativeLoadedAndDispatcher(UiContext context)
