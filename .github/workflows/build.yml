@@ -1,27 +1,56 @@
-name: Build
+name: Main dev APK (manual test only)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ump-dev-apk-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: windows-latest
-
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          ref: 5a1f1bbc064b471d4fabe3bf86618724ed8fca6e
+          persist-credentials: false
+      - name: Verify exact main source commit
+        shell: pwsh
+        run: |
+          $actual = git rev-parse HEAD
+          Write-Output "APP_SOURCE_COMMIT=$actual"
+          if ($actual -ne "5a1f1bbc064b471d4fabe3bf86618724ed8fca6e") { throw "Unexpected source commit" }
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
-
+          dotnet-version: '9.0.319'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - name: Install MAUI Android workload
         run: dotnet workload install maui-android
-
-      - name: Restore
-        run: dotnet restore Predict.csproj
-
-      - name: Build Release
-        run: dotnet build Predict.csproj -c Release -f net9.0-android
+      - name: Install required Android platform
+        shell: pwsh
+        run: |
+          & "$env:ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.bat" "platforms;android-35" "build-tools;35.0.0"
+          if ($LASTEXITCODE -ne 0) { throw "Android SDK installation failed" }
+      - name: Build trimmed Release APK with test ads
+        shell: pwsh
+        run: |
+          dotnet build Predict.csproj -c Release -f net9.0-android -p:PredictTestAds=true -p:AndroidPackageFormats=apk "-p:AndroidSdkDirectory=$env:ANDROID_HOME" "-p:JavaSdkDirectory=$env:JAVA_HOME" --nologo -v:minimal
+          if ($LASTEXITCODE -ne 0) { throw "APK build failed" }
+      - name: Upload test APK (not a store release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: predict-main-testads-5a1f1bbc064b471d4fabe3bf86618724ed8fca6e
+          path: bin/Release/net9.0-android/android-arm64/*-Signed.apk
+          if-no-files-found: error
+          retention-days: 3
