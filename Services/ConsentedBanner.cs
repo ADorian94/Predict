@@ -69,9 +69,16 @@ public sealed class ConsentedBanner : Grid
         if (banner is not null)
         {
             var old = banner; banner = null;
-            BannerAdLifecycle.SetObserve(old, false);
+            var handler = old.Handler;
 #if ANDROID
-            if (old.Handler?.PlatformView is Android.Gms.Ads.AdView native)
+            var native = handler?.PlatformView as Android.Gms.Ads.AdView;
+#endif
+            BannerAdLifecycle.SetObserve(old, false);
+            // MAUI's synchronous LayoutHandler.Remove calls child.ToPlatform().
+            // Keep the child's handler/platform view intact until that has completed.
+            Children.Remove(old);
+#if ANDROID
+            if (native is not null)
             {
                 Teardown(() => native.Pause());
                 Teardown(() => native.AdListener = null!);
@@ -81,9 +88,8 @@ public sealed class ConsentedBanner : Grid
             // Plugin 2.4.0's handler and its interface are INTERNAL. Its public
             // Destroy method unsubscribes singleton events; Disconnect alone does not.
             // Preserve that exact installed method for trimmed Android builds.
-            Teardown(() => old.Handler?.GetType().GetMethod("Destroy", Type.EmptyTypes)?.Invoke(old.Handler, null));
-            Teardown(() => old.Handler?.DisconnectHandler());
-            Children.Remove(old);
+            Teardown(() => handler?.GetType().GetMethod("Destroy", Type.EmptyTypes)?.Invoke(handler, null));
+            Teardown(() => handler?.DisconnectHandler());
         }
         HeightRequest = 0;
         Margin = new Thickness(0);
