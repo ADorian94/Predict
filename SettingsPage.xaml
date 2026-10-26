@@ -155,6 +155,50 @@
                     </Grid>
                 </Border>
 
+                <!-- Optional analytics follows the existing two-card preference design. -->
+                <Label Text="OPTIONAL ANALYTICS" FontSize="11" FontAttributes="Bold"
+                       TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2" Margin="4,0,0,0"/>
+                <Border Padding="18,16" StrokeThickness="1.5"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
+                    <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Border Grid.Column="0" Padding="0,16" StrokeThickness="1.5"
+                                    SemanticProperties.Description="Enable optional usage analytics"
+                                    Background="{Binding AnalyticsEnabledBackground}"
+                                    Stroke="{Binding AnalyticsEnabledBorder}">
+                                <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding EnableAnalyticsCommand}"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="ENABLED" FontSize="13" FontAttributes="Bold"
+                                       TextColor="{Binding AnalyticsEnabledTextColor}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <Border Grid.Column="1" Padding="0,16" StrokeThickness="1.5"
+                                    SemanticProperties.Description="Disable optional usage analytics"
+                                    Background="{Binding AnalyticsDisabledBackground}"
+                                    Stroke="{Binding AnalyticsDisabledBorder}">
+                                <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding DisableAnalyticsCommand}"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="DISABLED" FontSize="13" FontAttributes="Bold"
+                                       TextColor="{Binding AnalyticsDisabledTextColor}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                        </Grid>
+                        <Label Text="Optional usage statistics for Mixpanel EU. No workout values."
+                               FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
+                        <Label Text="Privacy details" FontSize="12"
+                               TextColor="{DynamicResource AccentLight}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowAnalyticsDetailsCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
         </ScrollView>
 

@@ -22,6 +22,13 @@ public static class OneRmCalculator
 
     public static OneRmResult Calculate(double weightKg, int reps, double rpe, bool isLbs = false, bool isRounded = true)
     {
+        if (!double.IsFinite(weightKg) || weightKg <= 0)
+            throw new ArgumentOutOfRangeException(nameof(weightKg));
+        if (reps is < 1 or > 20)
+            throw new ArgumentOutOfRangeException(nameof(reps));
+        if (!double.IsFinite(rpe) || rpe is < 6 or > 10)
+            throw new ArgumentOutOfRangeException(nameof(rpe));
+
         return new OneRmResult(
             RpeTable(weightKg, reps, rpe),
             Epley(weightKg, reps),
@@ -34,9 +41,11 @@ public static class OneRmCalculator
             weightKg, reps, rpe, isLbs, isRounded);
     }
 
-    private static double RpeTable(double weight, int reps, double rpe)
+    private static double? RpeTable(double weight, int reps, double rpe)
     {
-        var repIdx = Math.Clamp(reps - 1, 0, RtsTable.GetLength(0) - 1);
+        // The existing RTS table has no supported rows above ten repetitions.
+        if (reps > RtsTable.GetLength(0)) return null;
+        var repIdx = reps - 1;
         var rpeIdx = FindRpeIndex(rpe);
         return Math.Round(weight / RtsTable[repIdx, rpeIdx], 1);
     }

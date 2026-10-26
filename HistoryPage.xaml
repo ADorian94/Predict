@@ -6,6 +6,7 @@
              xmlns:models="clr-namespace:Predict.Models"
              xmlns:local="clr-namespace:Predict"
              xmlns:admob="clr-namespace:Plugin.MauiMtAdmob.Controls;assembly=Plugin.MauiMtAdmob"
+             xmlns:services="clr-namespace:Predict.Services"
              x:Class="Predict.HistoryPage"
              BackgroundColor="{DynamicResource PageBackground}"
              Shell.NavBarIsVisible="False">
@@ -47,8 +48,10 @@
             <local:HistoryItemTemplateSelector.AdTemplate>
                 <DataTemplate x:DataType="models:AdPlaceholder">
                     <Grid HeightRequest="60" Margin="0,0,0,12">
-                        <admob:AdMMTAdView
-                            AdsId="ca-app-pub-3012910791046560/3302176099"
+                        <admob:MTAdView
+                            AdsId="{x:Static services:AdUnits.Banner}"
+                            AdSize="Banner"
+                            services:BannerAdLifecycle.Observe="True"
                             HorizontalOptions="FillAndExpand"
                             VerticalOptions="FillAndExpand"/>
                     </Grid>
