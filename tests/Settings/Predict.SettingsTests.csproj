@@ -3,6 +3,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <Compile Include="Program.cs" />
+    <Compile Include="../../Services/AdsConsentCoordinator.cs" /><Compile Include="../../Services/AdsConsentPresentation.cs"/>
     <Compile Include="../../ViewModels/SettingsViewModel.cs" Link="SettingsViewModel.cs" />
     <Compile Include="../../Services/AppSettingsService.cs" Link="AppSettingsService.cs" />
     <Compile Include="../../AppConstants.cs" Link="AppConstants.cs" />

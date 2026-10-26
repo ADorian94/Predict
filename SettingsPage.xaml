@@ -199,6 +199,21 @@
                         </Label>
                     </VerticalStackLayout>
                 </Border>
+                <Border Padding="18,16" StrokeThickness="1.5"
+                        IsVisible="{Binding AdvertisingPrivacyRequired}"
+                        Background="{DynamicResource CardBackgroundBrush}"
+                        Stroke="{DynamicResource CardBorderBrush}">
+                    <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ShowAdvertisingPrivacyCommand}"/>
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Advertising privacy choices" FontSize="14" FontAttributes="Bold"
+                               TextColor="{DynamicResource AccentLight}"/>
+                        <Label Text="Review Google's advertising privacy options. Separate from usage analytics."
+                               FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
         </ScrollView>
 

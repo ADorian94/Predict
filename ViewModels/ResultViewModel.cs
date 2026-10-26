@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Plugin.MauiMtAdmob;
 using Predict.Models;
 using Predict.Services;
 
@@ -8,7 +7,7 @@ namespace Predict.ViewModels;
 
 public partial class ResultViewModel : ObservableObject
 {
-    private const string InterstitialId = AdUnits.Interstitial;
+    private readonly AdsConsentCoordinator _ads;
     private static int _exitCount = 0;
 
     [ObservableProperty]
@@ -19,11 +18,12 @@ public partial class ResultViewModel : ObservableObject
 
     private readonly CancellationTokenSource _cts = new();
 
-    public ResultViewModel(ResultContext ctx)
+    public ResultViewModel(ResultContext ctx, AdsConsentCoordinator ads)
     {
+        _ads = ads;
         Result = ctx.Current;
         _ = AnimateCounterAsync(_cts.Token);
-        CrossMauiMTAdmob.Current.LoadInterstitial(InterstitialId);
+        _ads.PreloadInterstitial();
     }
 
     public void CancelAnimation() => _cts.Cancel();
@@ -83,33 +83,21 @@ public partial class ResultViewModel : ObservableObject
             });
     }
 
-    private static async Task TryShowInterstitialAsync()
+    private async Task TryShowInterstitialAsync()
     {
         _exitCount++;
-        if (_exitCount % 3 == 0 && CrossMauiMTAdmob.Current.IsInterstitialLoaded())
-        {
-            var tcs = new TaskCompletionSource();
-            void OnClosed(object? s, EventArgs e)
-            {
-                CrossMauiMTAdmob.Current.OnInterstitialClosed -= OnClosed;
-                tcs.TrySetResult();
-            }
-            CrossMauiMTAdmob.Current.OnInterstitialClosed += OnClosed;
-            CrossMauiMTAdmob.Current.ShowInterstitial();
-            await tcs.Task;
-            CrossMauiMTAdmob.Current.LoadInterstitial(InterstitialId);
-        }
+        if (_exitCount % 3 == 0) await _ads.TryShowInterstitialAsync();
     }
 
     [RelayCommand]
-    private static async Task GoBack()
+    private async Task GoBack()
     {
         await TryShowInterstitialAsync();
         await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]
-    private static async Task NewEstimation()
+    private async Task NewEstimation()
     {
         await TryShowInterstitialAsync();
         await Shell.Current.GoToAsync("//MainPage");

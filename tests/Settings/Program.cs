@@ -33,6 +33,43 @@ if (Shell.Current.LastMessage != MixpanelService.AnalyticsDisclosure || Mixpanel
     throw new Exception("FAIL: disclosure popup must show full text without changing consent.");
 Console.WriteLine("PASS: details popup shows full disclosure without enabling analytics.");
 
+var ads = new AdsConsentCoordinator();
+var adsCtor = typeof(SettingsViewModel).GetConstructor([typeof(AppSettingsService), typeof(AdsConsentCoordinator)]);
+if(adsCtor is null) throw new Exception("FAIL: settings advertising privacy does not use production consent gate");
+var advertisingVm = (SettingsViewModel)adsCtor.Invoke([new AppSettingsService(), ads]);
+var advertisingCommand = typeof(SettingsViewModel).GetProperty("ShowAdvertisingPrivacyCommand")?.GetValue(advertisingVm) as ICommand;
+if(advertisingCommand is null) throw new Exception("FAIL: generated advertising privacy command missing");
+if((bool)typeof(SettingsViewModel).GetProperty("AdvertisingPrivacyRequired")!.GetValue(advertisingVm)!)
+ throw new Exception("FAIL: advertising choices visible without UMP requirement");
+advertisingCommand.Execute(null);
+if(MixpanelService.Writes != 3) throw new Exception("FAIL: advertising choices changed analytics consent");
+Console.WriteLine("PASS: generated advertising privacy command is separate; hidden when UMP not required.");
+
+var advertisingBackend = new AdvertisingBackend();
+var liveAds = new AdsConsentCoordinator(advertisingBackend);
+var liveSettings = new SettingsViewModel(new AppSettingsService(), liveAds);
+var privacyChanges = new List<string?>();
+liveSettings.PropertyChanged += (_,e) => privacyChanges.Add(e.PropertyName);
+liveAds.Start(); advertisingBackend.Required = true; advertisingBackend.Update!(false);
+if(!liveSettings.AdvertisingPrivacyRequired || !privacyChanges.Contains("AdvertisingPrivacyRequired"))
+ throw new Exception("FAIL: actual UMP requirement changes must refresh Settings visibility");
+liveSettings.ShowAdvertisingPrivacyCommand.Execute(null);
+liveSettings.ShowAdvertisingPrivacyCommand.Execute(null);
+if(advertisingBackend.Forms != 1 || MixpanelService.Writes != 3)
+ throw new Exception("FAIL: generated Settings command must reopen UMP once and never change analytics");
+advertisingBackend.Required=false; advertisingBackend.Closed!();
+if(liveSettings.AdvertisingPrivacyRequired) throw new Exception("FAIL: Settings must reread UMP requirement after dismissal");
+Console.WriteLine("PASS: actual generated advertising command reopens once; live UMP visibility; analytics unchanged.");
+Console.WriteLine("Settings tests: 5 passed, 0 failed");
+
+sealed class AdvertisingBackend : IAdsConsentBackend {
+ public bool Required; public bool CanRequestAds=>false;public bool PrivacyOptionsRequired=>Required;
+ public Action<bool>? Update;public Action? Closed;public int Forms;
+ public void RequestUpdate(Action<bool> d)=>Update=d;public void InitializeAds(Action d)=>throw new Exception("No SDK init allowed");
+ public void GatherConsent(Action d)=>d();public void ShowPrivacyOptions(Action d){Forms++;Closed=d;}
+ public void SetAdsEnabled(bool b){}public void ClearInterstitial()=>throw new Exception("No SDK before init");
+ public void LoadInterstitial()=>throw new Exception("No SDK before init");public bool IsInterstitialLoaded()=>throw new Exception("No SDK before init");public void ShowInterstitial(Action d)=>throw new Exception("No SDK before init");
+}
 public record Color(string Value);
 public abstract class Brush;
 public sealed class SolidColorBrush(Color color) : Brush { public Color Color { get; } = color; }
