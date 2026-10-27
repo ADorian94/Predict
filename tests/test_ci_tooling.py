@@ -58,7 +58,7 @@ class ProvenanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=ROOT) as folder:
             output = Path(folder) / "github-output"
             env = dict(os.environ, SOURCE_SHA="12" * 20, WORKFLOW_SHA="34" * 20,
-                       MANIFEST_DIR=folder, GITHUB_OUTPUT=str(output))
+                       MANIFEST_DIR=folder, GITHUB_OUTPUT=str(output), SOURCE_DIR=str(ROOT))
             result = subprocess.run([sys.executable, str(ROOT / "tools/ci/record_source.py")],
                                     env=env, capture_output=True, text=True, check=True)
             self.assertEqual("12" * 20, json.loads(result.stdout)["source_sha"])
@@ -90,6 +90,25 @@ class ProvenanceTests(unittest.TestCase):
             self.assertTrue(saved["test_ads"])
             self.assertTrue(saved["trimmed"])
             self.assertEqual("runner-debug", saved["signing"])
+            self.assertEqual("net10.0-android36.0", saved["target_framework"])
+            self.assertEqual("10.0.403", saved["sdk"])
+            self.assertEqual("10.0.403", saved["workload_set"])
+            self.assertEqual("10.0.120", saved["maui_version"])
+
+    def test_source_toolchain_is_verified_not_just_claimed(self):
+        tool = load_tool("record_source")
+        self.assertTrue(callable(getattr(tool, "verify_source", None)))
+        tool.verify_source(ROOT)
+        with tempfile.TemporaryDirectory(dir=ROOT) as folder:
+            directory = Path(folder)
+            (directory / "Predict.csproj").write_text((ROOT / "Predict.csproj").read_text().replace("net10.0-android36.0", "net9.0-android"))
+            (directory / "global.json").write_text((ROOT / "global.json").read_text())
+            with self.assertRaises(ValueError):
+                tool.verify_source(directory)
+            (directory / "Predict.csproj").write_text((ROOT / "Predict.csproj").read_text())
+            (directory / "global.json").write_text((ROOT / "global.json").read_text().replace("10.0.403", "10.0.402"))
+            with self.assertRaises(ValueError):
+                tool.verify_source(directory)
 
 
 if __name__ == "__main__":

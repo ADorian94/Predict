@@ -21,18 +21,32 @@ class WorkflowContracts(unittest.TestCase):
         for forbidden in ("pull_request_target", "secrets.", "contents: write", "9.0.x"):
             self.assertNotIn(forbidden, text)
 
+    def test_pinned_workload_is_installed_before_console_regressions(self):
+        text = self.read(".github/workflows/build.yml")
+        self.assertLess(text.index("uses: ./.github/actions/setup-android"),
+                        text.index("python tools/ci/run_regressions.py"),
+                        "SDK workload pin is resolved even for plain console projects")
+
     def test_shared_setup_and_build_are_pinned_to_proven_recipe(self):
         setup = self.read(".github/actions/setup-android/action.yml")
         for required in ("9.0.319", "java-version: '17'", "distribution: temurin",
-                         "platforms;android-35", "build-tools;35.0.0", "dotnet workload install maui-android"):
+                         "platforms;android-36", "build-tools;36.0.0", "dotnet workload install maui-android", "10.0.403",
+                         "working-directory: ${{ inputs.workflow-directory }}"):
             self.assertIn(required, setup)
+        self.assertNotIn("maui-android --version", setup)
+        self.assertIn("$sdkVersion -cne '10.0.403'", setup)
+        self.assertIn("$workloadVersion -cne '10.0.403'", setup)
+        ci = self.read(".github/workflows/build.yml")
+        self.assertIn("9.0.319", ci)
+        self.assertIn("10.0.403", ci)
         build = self.read(".github/actions/build-test-apk/action.yml")
-        for required in ("dotnet build Predict.csproj", "-c Release -f net9.0-android",
+        for required in ("dotnet build Predict.csproj", "-c Release -f net10.0-android36.0",
                          "-p:PredictTestAds=true", "-p:AndroidPackageFormats=apk",
                          "-p:RuntimeIdentifier=android-arm64", "-p:PublishTrimmed=true",
                          "-p:AndroidKeyStore=false", "AndroidSdkDirectory=$env:ANDROID_HOME",
                          "JavaSdkDirectory=$env:JAVA_HOME", "$LASTEXITCODE", "No signed APK produced",
-                         "apksigner.bat", "--print-certs"):
+                         "verify_android_apk.py", "TOOLING_DIRECTORY", "record_source.py", "--verify-source",
+                         "-getProperty:TargetFramework,MauiVersion,MauiWorkloadVersion", "--build-tools", "--report", "--summary"):
             self.assertIn(required, build)
 
     def test_manual_dev_separates_workflow_tools_from_selected_application(self):
@@ -44,8 +58,8 @@ class WorkflowContracts(unittest.TestCase):
                          "uses: ./workflow/.github/actions/setup-android",
                          "uses: ./workflow/.github/actions/build-test-apk", "source-directory: source",
                          "name: ${{ steps.source.outputs.artifact_name }}",
-                         "source/bin/Release/net9.0-android/android-arm64/*-Signed.apk",
-                         "provenance/source-manifest.json", "retention-days: 3", "if-no-files-found: error"):
+                         "source/bin/Release/net10.0-android36.0/android-arm64/*-Signed.apk",
+                         "provenance/source-manifest.json", "provenance/apk-verification", "workflow-directory: workflow", "retention-days: 3", "if-no-files-found: error"):
             self.assertIn(required, text)
         self.assertEqual(2, text.count("persist-credentials: false"))
         self.assertNotIn("${{ inputs.source_ref }}", text)  # Never embedded into shell source.

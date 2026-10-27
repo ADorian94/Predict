@@ -4,6 +4,9 @@ inputs:
   source-directory:
     description: Application checkout directory relative to the workspace
     default: '.'
+  report-directory:
+    description: Static APK verification reports relative to workspace
+    default: 'apk-verification'
 runs:
   using: composite
   steps:
@@ -11,23 +14,35 @@ runs:
       shell: pwsh
       env:
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
+        REPORT_DIRECTORY: ${{ inputs.report-directory }}
+        TOOLING_DIRECTORY: ${{ github.action_path }}/../../..
       run: |
         $ErrorActionPreference = 'Stop'
         Push-Location (Join-Path $env:GITHUB_WORKSPACE $env:SOURCE_DIRECTORY)
         try {
-          dotnet build Predict.csproj -c Release -f net9.0-android `
+          python (Join-Path $env:TOOLING_DIRECTORY 'tools/ci/record_source.py') --verify-source .
+          if ($LASTEXITCODE -ne 0) { throw 'Source toolchain does not match trusted build configuration' }
+          dotnet msbuild Predict.csproj -p:TargetFramework=net10.0-android36.0 `
+            -getProperty:TargetFramework,MauiVersion,MauiWorkloadVersion,TargetPlatformVersion,SupportedOSPlatformVersion,RuntimeIdentifier
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot evaluate Android build properties' }
+          dotnet build Predict.csproj -c Release -f net10.0-android36.0 `
             -p:PredictTestAds=true -p:AndroidPackageFormats=apk `
             -p:RuntimeIdentifier=android-arm64 -p:PublishTrimmed=true `
-            -p:AndroidKeyStore=false `
+            -p:AndroidKeyStore=false -p:WarningsAsErrors=XA0141 `
             "-p:AndroidSdkDirectory=$env:ANDROID_HOME" `
             "-p:JavaSdkDirectory=$env:JAVA_HOME" --nologo -v:minimal
           if ($LASTEXITCODE -ne 0) { throw "Android build failed: $LASTEXITCODE" }
-          $apks = @(Get-ChildItem 'bin/Release/net9.0-android/android-arm64/*-Signed.apk' -File)
+          $apks = @(Get-ChildItem 'bin/Release/net10.0-android36.0/android-arm64/*-Signed.apk' -File)
           if ($apks.Count -eq 0) { throw 'No signed APK produced' }
-          $apksigner = Join-Path $env:ANDROID_HOME 'build-tools/35.0.0/apksigner.bat'
+          $tools = Join-Path $env:ANDROID_HOME 'build-tools/36.0.0'
+          $reportDirectory = Join-Path $env:GITHUB_WORKSPACE $env:REPORT_DIRECTORY
           foreach ($apk in $apks) {
-            & $apksigner verify --verbose --print-certs $apk.FullName
-            if ($LASTEXITCODE -ne 0) { throw "APK signature verification failed: $LASTEXITCODE" }
+            $report = Join-Path $reportDirectory ($apk.BaseName + '.json')
+            $summary = Join-Path $reportDirectory ($apk.BaseName + '.md')
+            python (Join-Path $env:TOOLING_DIRECTORY 'tools/ci/verify_android_apk.py') `
+              --apk $apk.FullName --build-tools $tools --report $report --summary $summary
+            if ($LASTEXITCODE -ne 0) { throw "APK static verification failed: $LASTEXITCODE" }
+            Get-Content -LiteralPath $summary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
           }
         } finally {
           Pop-Location

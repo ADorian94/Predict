@@ -1,8 +1,26 @@
 """Record the resolved checkout SHA, not the user-entered ref or a build constant."""
+import argparse
 import json
 import os
 import re
 from pathlib import Path
+import xml.etree.ElementTree as ET
+
+TOOLCHAIN = {"target_framework": "net10.0-android36.0", "sdk": "10.0.403",
+             "workload_set": "10.0.403", "maui_version": "10.0.120"}
+
+def verify_source(directory):
+    project = ET.parse(directory / "Predict.csproj")
+    pin = json.loads((directory / "global.json").read_text(encoding="utf-8"))
+    expected = {"TargetFrameworks": TOOLCHAIN["target_framework"], "MauiVersion": TOOLCHAIN["maui_version"],
+                "RuntimeIdentifier": "android-arm64", "SupportedOSPlatformVersion": "26.0"}
+    for name, value in expected.items():
+        if project.findtext(".//" + name) != value:
+            raise ValueError("Unexpected source property: " + name)
+    if pin.get("sdk") != {"version": TOOLCHAIN["sdk"], "rollForward": "disable", "allowPrerelease": False, "workloadVersion": TOOLCHAIN["workload_set"]}:
+        raise ValueError("Unexpected source SDK/workload pin")
+    return dict(TOOLCHAIN)
+
 
 
 def record(source_sha, workflow_sha, directory):
@@ -10,6 +28,7 @@ def record(source_sha, workflow_sha, directory):
         if not re.fullmatch(r"[0-9a-f]{40}", sha) or sha == "0" * 40:
             raise ValueError("Expected a nonzero full lowercase commit SHA")
     manifest = {
+        **TOOLCHAIN,
         "source_sha": source_sha,
         "workflow_sha": workflow_sha,
         "artifact_name": "predict-dev-" + source_sha,
@@ -25,6 +44,13 @@ def record(source_sha, workflow_sha, directory):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--verify-source", type=Path)
+    args = parser.parse_args()
+    if args.verify_source is not None:
+        print(json.dumps(verify_source(args.verify_source), indent=2))
+        return
+    verify_source(Path(os.environ["SOURCE_DIR"]))
     manifest = record(os.environ["SOURCE_SHA"], os.environ["WORKFLOW_SHA"], Path(os.environ["MANIFEST_DIR"]))
     print(json.dumps(manifest, indent=2))
     with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:

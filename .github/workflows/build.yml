@@ -21,11 +21,14 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.319'
+          dotnet-version: |
+            9.0.319
+            10.0.403
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      # global.json's workload pin is resolved for console projects too.
+      - uses: ./.github/actions/setup-android
       - name: Run all executable regressions and Python tests
         run: python tools/ci/run_regressions.py
-      - uses: ./.github/actions/setup-android
       - uses: ./.github/actions/build-test-apk
