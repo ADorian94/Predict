@@ -21,6 +21,12 @@ class WorkflowContracts(unittest.TestCase):
         for forbidden in ("pull_request_target", "secrets.", "contents: write", "9.0.x"):
             self.assertNotIn(forbidden, text)
 
+    def test_pinned_workload_is_installed_before_console_regressions(self):
+        text = self.read(".github/workflows/build.yml")
+        self.assertLess(text.index("uses: ./.github/actions/setup-android"),
+                        text.index("python tools/ci/run_regressions.py"),
+                        "SDK workload pin is resolved even for plain console projects")
+
     def test_shared_setup_and_build_are_pinned_to_proven_recipe(self):
         setup = self.read(".github/actions/setup-android/action.yml")
         for required in ("9.0.319", "java-version: '17'", "distribution: temurin",
