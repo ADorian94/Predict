@@ -163,7 +163,7 @@
                         Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="12">
-                        <Label Text="Optional usage statistics for Mixpanel EU. No workout values."
+                        <Label Text="Optional usage statistics for Mixpanel EU."
                                FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <Border Grid.Column="0" Padding="0,16" StrokeThickness="1.5"
@@ -207,7 +207,7 @@
                             Stroke="{DynamicResource CardBorderBrush}">
                         <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                         <VerticalStackLayout Spacing="12">
-                            <Label Text="Review Google's advertising privacy options. Separate from usage analytics."
+                            <Label Text="Review Google's advertising privacy options."
                                    FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
                             <Border StrokeThickness="1.5"
                                     Background="{DynamicResource CardBackgroundBrush}"

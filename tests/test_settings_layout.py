@@ -33,7 +33,7 @@ class SettingsLayoutTests(unittest.TestCase):
                          'Analytics must read explanation -> choices -> privacy link')
         self.assertEqual(grid.get('ColumnDefinitions'), '*,*')
         self.assertEqual([e.get('Grid.Column') for e in grid], ['0', '1'])
-        self.assertIn('No workout values', explanation.get('Text'))
+        self.assertEqual(explanation.get('Text'), 'Optional usage statistics for Mixpanel EU.')
 
     def advertising_group(self):
         heading = self.one(e for e in self.root.findall('.//m:Label', NS)
@@ -67,7 +67,7 @@ class SettingsLayoutTests(unittest.TestCase):
         self.assertIsNone(card.find('m:Border.GestureRecognizers', NS))
         stack = self.one(card.findall('m:VerticalStackLayout', NS))
         self.assertEqual(list(stack)[0].tag, '{' + NS['m'] + '}Label')
-        self.assertIn('Separate from usage analytics', list(stack)[0].get('Text'))
+        self.assertEqual(list(stack)[0].get('Text'), "Review Google's advertising privacy options.")
         self.assertIn(action, list(list(stack)[-1].iter()))
 
     def test_consent_cards_use_live_theme_resources_and_flexible_dimensions(self):
