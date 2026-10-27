@@ -1,0 +1,61 @@
+name: Dev APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Application branch, tag or full commit SHA (not the workflow version)
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout workflow tools from the selected workflow revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: workflow
+          persist-credentials: false
+      # Resolve the input in checkout, never interpolate it into a shell script.
+      - name: Checkout selected application snapshot
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || 'main' }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Record actual source SHA and workflow_sha
+        id: source
+        shell: pwsh
+        env:
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          MANIFEST_DIR: provenance
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sha = git -C source rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve source SHA' }
+          $env:SOURCE_SHA = $sha
+          python workflow/tools/ci/record_source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot record source provenance' }
+      - uses: ./workflow/.github/actions/setup-android
+      - uses: ./workflow/.github/actions/build-test-apk
+        with:
+          source-directory: source
+      - name: Upload runner-debug signed APK and provenance (never signing keys)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.source.outputs.artifact_name }}
+          path: |
+            source/bin/Release/net9.0-android/android-arm64/*-Signed.apk
+            provenance/source-manifest.json
+          if-no-files-found: error
+          retention-days: 3

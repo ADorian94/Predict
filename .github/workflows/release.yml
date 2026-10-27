@@ -1,42 +1,60 @@
-name: Release
+name: Release (disabled preparation only)
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      enable_release:
+        description: Explicit acknowledgement (does not enable unverified signing)
+        required: true
+        default: false
+        type: boolean
+      release_source_sha:
+        description: Full lowercase source SHA; must equal the selected workflow revision
+        required: true
+        type: string
+
+permissions:
+  contents: read
 
 jobs:
-  release:
+  preflight:
     runs-on: windows-latest
-
+    timeout-minutes: 5
+    env:
+      # Deliberately fail closed. No signing/build/upload path exists yet.
+      RELEASE_SIGNING_VERIFIED: 'false'
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - name: Install MAUI Android workload
-        run: dotnet workload install maui-android
-
-      - name: Decode keystore
+      - name: Validate release intent and refuse unverified production signing
+        shell: pwsh
+        env:
+          ENABLE_RELEASE: ${{ inputs.enable_release }}
+          RELEASE_SOURCE_SHA: ${{ inputs.release_source_sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+          STORE_PASS: ${{ secrets.STORE_PASS }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" > keystore.b64
-          certutil -decode keystore.b64 predict-release.jks
-
-      - name: Publish signed AAB
-        run: >
-          dotnet publish Predict.csproj
-          -c Release -f net9.0-android
-          -p:AndroidPackageFormats=aab
-          -p:AndroidSigningKeyStore=predict-release.jks
-          -p:AndroidSigningKeyAlias=${{ secrets.KEY_ALIAS }}
-          -p:AndroidSigningKeyPass=${{ secrets.KEY_PASS }}
-          -p:AndroidSigningStorePass=${{ secrets.STORE_PASS }}
-          -o publish-out
-
-      - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: predict-${{ github.ref_name }}
-          path: publish-out/**/*.aab
+          $ErrorActionPreference = 'Stop'
+          if ($env:ENABLE_RELEASE -cne 'true') { throw 'Explicit enable_release acknowledgement required' }
+          if ($env:RELEASE_SOURCE_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:RELEASE_SOURCE_SHA -eq ('0' * 40)) {
+            throw 'A non-placeholder full lowercase release source SHA is required'
+          }
+          if ($env:RELEASE_SOURCE_SHA -cne $env:WORKFLOW_SHA) { throw 'Release source SHA does not match selected workflow revision' }
+          foreach ($name in @('KEYSTORE_BASE64', 'KEY_ALIAS', 'KEY_PASS', 'STORE_PASS')) {
+            $value = [Environment]::GetEnvironmentVariable($name)
+            if ([string]::IsNullOrWhiteSpace($value) -or $value -match '^(?i:placeholder|changeme|replace.?me|todo|example)$') {
+              throw "Required production signing secret missing or placeholder: $name"
+            }
+          }
+          throw 'Production signing is not independently verified; release remains disabled'
+      # Future signing must explicitly set AndroidKeyStore=true and use only
+      # this runner-temp directory. Currently no private key is decoded at all.
+      - name: Always clean reserved production signing temp directory
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          $directory = Join-Path $env:RUNNER_TEMP 'predict-production-signing'
+          if (Test-Path -LiteralPath $directory) {
+            Remove-Item -LiteralPath $directory -Recurse -Force -ErrorAction Stop
+          }
