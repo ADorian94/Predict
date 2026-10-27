@@ -163,6 +163,8 @@
                         Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
                     <VerticalStackLayout Spacing="12">
+                        <Label Text="Optional usage statistics for Mixpanel EU. No workout values."
+                               FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <Border Grid.Column="0" Padding="0,16" StrokeThickness="1.5"
                                     SemanticProperties.Description="Enable optional usage analytics"
@@ -189,8 +191,6 @@
                                        HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                         </Grid>
-                        <Label Text="Optional usage statistics for Mixpanel EU. No workout values."
-                               FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
                         <Label Text="Privacy details" FontSize="12"
                                TextColor="{DynamicResource AccentLight}">
                             <Label.GestureRecognizers>
@@ -199,21 +199,29 @@
                         </Label>
                     </VerticalStackLayout>
                 </Border>
-                <Border Padding="18,16" StrokeThickness="1.5"
-                        IsVisible="{Binding AdvertisingPrivacyRequired}"
-                        Background="{DynamicResource CardBackgroundBrush}"
-                        Stroke="{DynamicResource CardBorderBrush}">
-                    <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding ShowAdvertisingPrivacyCommand}"/>
-                    </Border.GestureRecognizers>
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Advertising privacy choices" FontSize="14" FontAttributes="Bold"
-                               TextColor="{DynamicResource AccentLight}"/>
-                        <Label Text="Review Google's advertising privacy options. Separate from usage analytics."
-                               FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
-                    </VerticalStackLayout>
-                </Border>
+                <VerticalStackLayout Spacing="20" IsVisible="{Binding AdvertisingPrivacyRequired}">
+                    <Label Text="ADVERTISING" FontSize="11" FontAttributes="Bold"
+                           TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2" Margin="4,0,0,0"/>
+                    <Border Padding="18,16" StrokeThickness="1.5"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            Stroke="{DynamicResource CardBorderBrush}">
+                        <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="Review Google's advertising privacy options. Separate from usage analytics."
+                                   FontSize="12" TextColor="{DynamicResource LabelMuted}"/>
+                            <Border StrokeThickness="1.5"
+                                    Background="{DynamicResource CardBackgroundBrush}"
+                                    Stroke="{DynamicResource CardBorderBrush}">
+                                <Border.StrokeShape><shapes:RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+                                <Button Text="REVIEW" Command="{Binding ShowAdvertisingPrivacyCommand}"
+                                        SemanticProperties.Description="Advertising privacy choices"
+                                        Background="Transparent" BorderWidth="0" CornerRadius="16" Shadow="{x:Null}"
+                                        Padding="0,16" MinimumHeightRequest="48" HorizontalOptions="Fill"
+                                        FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource AccentLight}"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
 
