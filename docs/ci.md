@@ -17,15 +17,35 @@ including both `PredictTestAds` banner configurations and the AdViews
 `test_*.py`, so CI contracts are not accidentally excluded by the old wiring-only
 pattern. These console harnesses do not replace native device acceptance.
 
-After tests, shared composite actions install .NET **9.0.319**, Temurin **17**,
-Android platform **35**, build-tools **35.0.0**, and `maui-android`; they build a
-trimmed Release `net9.0-android` / `android-arm64` APK with `PredictTestAds=true`.
-The JDK major, .NET SDK and SDK packages are explicit; `windows-latest`, action
-major tags and workload acquisition are not an immutable offline build image.
-The build action uses `AndroidKeyStore=false` for runner debug signing, checks
-that a `*-Signed.apk` exists and runs build-tools 35 `apksigner verify --print-certs`.
-A missing APK or failed verification fails the job, even if a manifest exists.
-No local Android build success or hosted success is implied by contract tests.
+CI installs both .NET SDK **9.0.319** (supplies the console tests' .NET9
+runtime) and **10.0.403** before running regressions. Console test TFMs remain
+`net9.0`; SDK10 builds them without major runtime roll-forward. Root `global.json`
+selects SDK10 exactly and pins **`sdk.workloadVersion=10.0.403`**. It is not a
+top-level `workload` object. Shared setup retains supported Temurin **17**, installs
+Android platform **36** and build-tools **36.0.0**, then runs
+`dotnet workload install maui-android` from the trusted workflow checkout root.
+Do **not** add `--version` to this command when global.json pins workloadVersion.
+The setup logs SDK/runtime/workload inventories and fails on unexpected selected
+SDK/workload versions. MAUI workload SDK **10.0.110** is distinct from explicitly
+selected MAUI Controls NuGet **10.0.120**; hosted restore/build must confirm this
+servicing combination. Existing plugin, logging, Sentry and other pins are retained.
+
+The shared build verifies source project/global.json intent using trusted tooling,
+logs evaluated Android/MAUI properties, then builds trimmed Release
+`net10.0-android36.0` / `android-arm64` with `PredictTestAds=true` and
+`AndroidKeyStore=false` (runner debug signing). XA0141 is an error. It requires a
+signed APK and invokes the trusted `tools/ci/verify_android_apk.py`, not an app
+checkout script. The checker enforces actual aapt targetSdk **36**, minSdk **26**,
+ARM64-only ABI, all native ELF PT_LOAD 16 KB alignment/congruence, local-header
+ZIP_STORED native data offsets, official `zipalign -c -P 16 -v 4`, and
+`apksigner verify --verbose --print-certs`. Compressed libraries are explicitly
+reported, not incorrectly failed on their ZIP data offset. Missing/malformed
+libraries, tool failures and missing tools fail closed. JSON detail plus Markdown
+summary are saved; the summary also goes to the Actions job summary on success.
+See [Android API36 acceptance](android-api36.md) for commands and runtime limits.
+The JDK major, SDK/workload set and SDK packages are explicit; runner images and
+action major tags are not an immutable offline build image. Contract/fixture
+tests do not imply a native build, signature or device acceptance success.
 
 ## Manual Dev APK (`.github/workflows/dev-apk.yml`)
 
@@ -36,7 +56,7 @@ repository, not a script to execute. An invalid ref fails checkout.
 
 The workflow checks out its own immutable `github.workflow_sha` into `workflow/`,
 and resolves `source_ref` with `actions/checkout` into the separate `source/`
-directory. Only `workflow/` supplies composite actions and provenance tooling;
+directory. Only `workflow/` supplies composite actions, APK verification and provenance tooling;
 application `.github/` and `tools/` are not used as CI orchestration. Inputs are
 passed as action inputs/environment data, never spliced into shell source. Building
 an application still executes its MSBuild code; this is not a sandbox for hostile
@@ -45,12 +65,15 @@ source. Manual builds have no signing secrets or persisted checkout credentials.
 Before building, `git -C source rev-parse HEAD` records the actual source commit.
 The full validated SHA appears in the log, `source-manifest.json`, and artifact
 name `predict-dev-<full-source-sha>`; no stale hard-coded source SHA is used.
-The manifest also records the workflow SHA, Release/ARM64/test-ad/trimmed intent
+The manifest also records the workflow SHA, SDK/workload/MAUI/TFM pins, Release/ARM64/test-ad/trimmed intent
 and runner-debug signing. It is a provenance/configuration record, not independent
 proof of source behavior or a certificate attestation.
 
-The same shared Android setup/build runs against `source/`. Successful manual
-builds upload only `*-Signed.apk` and the JSON manifest, with three-day retention
+Workload installation runs with `workflow-directory: workflow`, **not** the empty
+workspace root (whose highest preinstalled SDK could win). The app builds in
+`source/`, whose project/global.json must match the trusted API36 recipe.
+Successful manual builds upload only `*-Signed.apk`, the JSON manifest, and
+`provenance/apk-verification/*.json` / `*.md` reports, with three-day retention
 and missing-file errors. The artifact ZIP may contain a directory hierarchy;
 look for `source-manifest.json` and the signed APK within it. No private key,
 keystore, credentials, `bin/obj` tree or production AAB is uploaded.
@@ -98,7 +121,7 @@ The added Python tests are stdlib-only runner/provenance/contract regressions,
 including malformed-SHA rejection and real subprocess fail-fast behavior. Text
 contracts do not parse the complete GitHub Actions schema or execute Android
 packaging. Hosted GitHub validation of the workflow and APK is still required.
-The existing test projects and application sources are unchanged. Pages content
+The existing console test projects and application behavior sources are unchanged. Pages content
 and configuration are untouched. This uses standard hosted runners only; public
 repository execution is free, not a promise about private repositories, larger
 runners or unrelated account billing settings.

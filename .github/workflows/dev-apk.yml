@@ -39,6 +39,7 @@ jobs:
         env:
           WORKFLOW_SHA: ${{ github.workflow_sha }}
           MANIFEST_DIR: provenance
+          SOURCE_DIR: source
         run: |
           $ErrorActionPreference = 'Stop'
           $sha = git -C source rev-parse HEAD
@@ -47,15 +48,19 @@ jobs:
           python workflow/tools/ci/record_source.py
           if ($LASTEXITCODE -ne 0) { throw 'Cannot record source provenance' }
       - uses: ./workflow/.github/actions/setup-android
+        with:
+          workflow-directory: workflow
       - uses: ./workflow/.github/actions/build-test-apk
         with:
           source-directory: source
+          report-directory: provenance/apk-verification
       - name: Upload runner-debug signed APK and provenance (never signing keys)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.source.outputs.artifact_name }}
           path: |
-            source/bin/Release/net9.0-android/android-arm64/*-Signed.apk
+            source/bin/Release/net10.0-android36.0/android-arm64/*-Signed.apk
             provenance/source-manifest.json
+            provenance/apk-verification/
           if-no-files-found: error
           retention-days: 3
