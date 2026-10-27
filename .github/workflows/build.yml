@@ -6,22 +6,26 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: windows-latest
-
+    timeout-minutes: 45
     steps:
+      # On PRs this deliberately runs the current PR merge snapshot's tests.
+      # No secrets, persisted Git credentials, privileged trigger or deployment.
       - uses: actions/checkout@v4
-
+        with:
+          persist-credentials: false
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
-
-      - name: Install MAUI Android workload
-        run: dotnet workload install maui-android
-
-      - name: Restore
-        run: dotnet restore Predict.csproj
-
-      - name: Build Release
-        run: dotnet build Predict.csproj -c Release -f net9.0-android
+          dotnet-version: '9.0.319'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run all executable regressions and Python tests
+        run: python tools/ci/run_regressions.py
+      - uses: ./.github/actions/setup-android
+      - uses: ./.github/actions/build-test-apk

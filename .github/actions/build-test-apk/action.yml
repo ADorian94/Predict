@@ -1,0 +1,34 @@
+name: Build test APK
+description: Trimmed ARM64 Release APK with test ads and runner debug signing only
+inputs:
+  source-directory:
+    description: Application checkout directory relative to the workspace
+    default: '.'
+runs:
+  using: composite
+  steps:
+    - name: Build trimmed Release test-ad APK
+      shell: pwsh
+      env:
+        SOURCE_DIRECTORY: ${{ inputs.source-directory }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        Push-Location (Join-Path $env:GITHUB_WORKSPACE $env:SOURCE_DIRECTORY)
+        try {
+          dotnet build Predict.csproj -c Release -f net9.0-android `
+            -p:PredictTestAds=true -p:AndroidPackageFormats=apk `
+            -p:RuntimeIdentifier=android-arm64 -p:PublishTrimmed=true `
+            -p:AndroidKeyStore=false `
+            "-p:AndroidSdkDirectory=$env:ANDROID_HOME" `
+            "-p:JavaSdkDirectory=$env:JAVA_HOME" --nologo -v:minimal
+          if ($LASTEXITCODE -ne 0) { throw "Android build failed: $LASTEXITCODE" }
+          $apks = @(Get-ChildItem 'bin/Release/net9.0-android/android-arm64/*-Signed.apk' -File)
+          if ($apks.Count -eq 0) { throw 'No signed APK produced' }
+          $apksigner = Join-Path $env:ANDROID_HOME 'build-tools/35.0.0/apksigner.bat'
+          foreach ($apk in $apks) {
+            & $apksigner verify --verbose --print-certs $apk.FullName
+            if ($LASTEXITCODE -ne 0) { throw "APK signature verification failed: $LASTEXITCODE" }
+          }
+        } finally {
+          Pop-Location
+        }
