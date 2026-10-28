@@ -51,7 +51,7 @@ unsigned AAB, SHA256SUMS, source-manifest.json and preparation-report.json.
   This detects drift; separate writable checkouts are NOT an adversarial sandbox.
 - Default decoder resolution uses the selected dotnet executable root and exactly
   packs/Microsoft.Android.Sdk.Windows/36.1.118/tools/K4os.Compression.LZ4.dll,
-  pinned to bab961bb87d556e004a9f0bbe10a0986e6f8697483fe1884dc86b657b280b79b.
+  pinned to c1dc314a38fc53f15ab9fe9a24ced2729ee4cf7dbdd271d2b8782b08f9c86a77.
   SDK 9.0.319 must already exist under that root; actual helper-selected SDK must
   equal 9.0.319. No SDK install, arbitrary glob, alternate pack or missing-tool fallback.
   Shared setup explicitly provisions SDK 9.0.319 alongside 10.0.403; the prior

@@ -10,7 +10,7 @@ import sys
 import zipfile
 
 HERE = Path(__file__).resolve().parent
-LZ4_SHA256 = 'bab961bb87d556e004a9f0bbe10a0986e6f8697483fe1884dc86b657b280b79b'
+LZ4_SHA256 = 'c1dc314a38fc53f15ab9fe9a24ced2729ee4cf7dbdd271d2b8782b08f9c86a77'
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -27,8 +27,11 @@ def inputs(dotnet=None, lz4=None):
     decoder = Path(lz4).resolve() if lz4 else root/'packs/Microsoft.Android.Sdk.Windows/36.1.118/tools/K4os.Compression.LZ4.dll'
     if not executable.is_file() or not (root/'sdk/9.0.319/dotnet.dll').is_file():
         raise ValueError('Explicit dotnet root must contain verified helper SDK 9.0.319')
-    if decoder.name != 'K4os.Compression.LZ4.dll' or not decoder.is_file() or sha(decoder) != LZ4_SHA256:
-        raise ValueError('Pinned explicit decoder unavailable or SHA256 mismatch; no fallback')
+    observed = sha(decoder) if decoder.is_file() else 'missing'
+    if decoder.name != 'K4os.Compression.LZ4.dll' or observed != LZ4_SHA256:
+        state = 'missing' if observed == 'missing' else 'mismatch'
+        raise ValueError(f'Pinned explicit decoder {state}: dotnetRoot={root}; path={decoder}; '
+                         f'observedSHA={observed}; expectedSHA={LZ4_SHA256}')
     paths = [Path(__file__), HERE/'ads_attestation.py', HERE/'verify_android_apk.py',
              HERE/'ads_inspector/Program.cs.txt', HERE/'ads_inspector/Inspector.csproj.txt', executable, decoder]
     return {'dotnet': str(executable), 'lz4': str(decoder), 'tools': {str(p.resolve()): sha(p) for p in paths}}
