@@ -48,4 +48,5 @@
 		<MauiXaml Remove="tests\**\*.xaml" />
 	</ItemGroup>
 
+	<Import Project="build/Predict.BuildProfiles.targets" />
 </Project>

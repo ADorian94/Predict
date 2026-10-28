@@ -32,6 +32,7 @@ def record(source_sha, workflow_sha, directory):
         "source_sha": source_sha,
         "workflow_sha": workflow_sha,
         "artifact_name": "predict-dev-" + source_sha,
+        "build_profile": "Dev",
         "configuration": "Release",
         "runtime": "android-arm64",
         "test_ads": True,

@@ -1,5 +1,8 @@
 # GitHub Actions: regression CI and manual Android builds
 
+Application commands must choose an [explicit build profile](build-profiles.md).
+Release alone does not select Production; CI and Dev APK remain explicit Dev/true.
+
 ## Automatic CI (`.github/workflows/build.yml`)
 
 Pushes and pull requests targeting `main` keep the existing branch filters. The
@@ -32,7 +35,7 @@ servicing combination. Existing plugin, logging, Sentry and other pins are retai
 
 The shared build verifies source project/global.json intent using trusted tooling,
 logs evaluated Android/MAUI properties, then builds trimmed Release
-`net10.0-android36.0` / `android-arm64` with `PredictTestAds=true` and
+`net10.0-android36.0` / `android-arm64` with `PredictBuildProfile=Dev`, `PredictTestAds=true` and
 `AndroidKeyStore=false` (runner debug signing). XA0141 is an error. It requires a
 signed APK and invokes the trusted `tools/ci/verify_android_apk.py`, not an app
 checkout script. The checker enforces actual aapt targetSdk **36**, minSdk **26**,
@@ -65,7 +68,7 @@ source. Manual builds have no signing secrets or persisted checkout credentials.
 Before building, `git -C source rev-parse HEAD` records the actual source commit.
 The full validated SHA appears in the log, `source-manifest.json`, and artifact
 name `predict-dev-<full-source-sha>`; no stale hard-coded source SHA is used.
-The manifest also records the workflow SHA, SDK/workload/MAUI/TFM pins, Release/ARM64/test-ad/trimmed intent
+The manifest also records the workflow SHA, SDK/workload/MAUI/TFM pins, explicit Dev/Release/ARM64/test-ad/trimmed intent
 and runner-debug signing. It is a provenance/configuration record, not independent
 proof of source behavior or a certificate attestation.
 
