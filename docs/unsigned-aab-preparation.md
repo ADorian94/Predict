@@ -40,10 +40,31 @@ unsigned AAB, SHA256SUMS, source-manifest.json and preparation-report.json.
 - No real Predict AAB has been built by the local stdlib tests. Their mocked
   subprocesses, fake JAR and ZIP data are explicitly fixtures, not Android proof.
 - Hosted .NET 10 build/evaluated properties and exact output layout need review.
-- AAB-aware artifact IL/production ads proof is pending; the old APK verifier is
-  deliberately not repurposed. No C# helper or app globs are added here.
-- Native ELF 16KB compatibility, bundletool-generated splits and installed-device
-  acceptance remain pending gates. Structure validation is not these checks.
+- The builder now requires bounded Production managed-consumer attestation and
+  all AAB native ELF PT_LOAD 16KB checks BEFORE creating the export directory.
+  It reuses ads_attestation.py and inspect_elf, not an app string heuristic or
+  the APK ZIP-offset gate. Hash-bound results are embedded in preparation-report.json;
+  the four-file allowlist is unchanged. FAIL/INCONCLUSIVE, tool provenance drift
+  or artifact mismatch stops preparation with nonzero exit and no export.
+- Helpers are from the running trusted workflow checkout, not application source.
+  Tool hashes are captured before app build and checked before/after inspection.
+  This detects drift; separate writable checkouts are NOT an adversarial sandbox.
+- Default decoder resolution uses the selected dotnet executable root and exactly
+  packs/Microsoft.Android.Sdk.Windows/36.1.118/tools/K4os.Compression.LZ4.dll,
+  pinned to bab961bb87d556e004a9f0bbe10a0986e6f8697483fe1884dc86b657b280b79b.
+  SDK 9.0.319 must already exist under that root; actual helper-selected SDK must
+  equal 9.0.319. No SDK install, arbitrary glob, alternate pack or missing-tool fallback.
+  Shared setup explicitly provisions SDK 9.0.319 alongside 10.0.403; the prior
+  successful hosted run confirmed 9.0.319 installed. The exact default decoder
+  path/hash and helper-selected SDK still require a new gated hosted run;
+  missing or mismatching prerequisites intentionally BLOCK preparation.
+- Standalone actual-byte verification supports explicit --dotnet and --lz4-dll
+  (same decoder hash required): python tools/ci/preparation_gates.py app.aab
+  --dotnet <executable> --lz4-dll <decoder> --report <absent-report.json>.
+- Split generation, APK ZIP alignment, signer identity and installed-device
+  acceptance remain pending. No automatic split check is claimed; no keys created.
+- Managed consumer proof is bounded as documented in ads-artifact-check.md, not
+  native AOT/runtime/dataflow or manifest AdMob app-ID proof.
 - Current versionCode 1 is not Play-ready. Version policy, signing, Play upload,
   release enablement and user approvals remain outside this preparation path.
 

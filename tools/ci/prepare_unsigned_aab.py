@@ -17,8 +17,16 @@ BUNDLETOOL_URL = 'https://github.com/google/bundletool/releases/download/1.18.3/
 OUTPUT = Path('bin/Release/net10.0-android36.0/android-arm64')
 NAME = 'hu.dorian.predict.aab'
 
+_gate_spec = importlib.util.spec_from_file_location('trusted_preparation_gates', Path(__file__).with_name('preparation_gates.py'))
+_gates = importlib.util.module_from_spec(_gate_spec)
+_gate_spec.loader.exec_module(_gates)
+gate_inputs = _gates.inputs
+artifact_gates = _gates.check
+
 def prepare(source, workflow, destination, bundletool, runner=subprocess.run):
     source, workflow, destination, bundletool = [Path(p).resolve() for p in (source, workflow, destination, bundletool)]
+    if source == workflow or Path(__file__).resolve().parent != workflow / 'tools/ci':
+        raise ValueError('Require distinct trusted workflow checkout owning the running builder')
     if any((source / name).exists() for name in ('bin', 'obj')) or destination.exists():
         raise ValueError('Fresh source bin/obj and absent export directory required')
     spec = importlib.util.spec_from_file_location('trusted_record_source', Path(__file__).with_name('record_source.py'))
@@ -46,6 +54,8 @@ def prepare(source, workflow, destination, bundletool, runner=subprocess.run):
             raise ValueError('Expected actual nonzero lowercase full checkout SHA')
     if os.environ.get('EXPECTED_WORKFLOW_SHA', workflow_sha) != workflow_sha:
         raise ValueError('Trusted workflow checkout SHA mismatch')
+    # Snapshot trusted gate inputs BEFORE executing application build code.
+    gate_context = gate_inputs()
     started = time.time_ns()
     run(['dotnet', 'build', 'Predict.csproj', '-c', 'Release', '-f', 'net10.0-android36.0', '-r', 'android-arm64',
          '-p:PredictBuildProfile=Production', '-p:PredictTestAds=false', '-p:AndroidPackageFormats=aab',
@@ -86,8 +96,14 @@ def prepare(source, workflow, destination, bundletool, runner=subprocess.run):
     signed = expected.with_name('hu.dorian.predict-Signed.aab')
     if signed.exists():
         signed.unlink()
+    gates = artifact_gates(expected, gate_context, source_sha)
+    if gates.get('status') != 'PASS' or gates.get('artifact_sha256') != hashlib.sha256(expected.read_bytes()).hexdigest():
+        raise ValueError('Static gate result binding mismatch')
     destination.mkdir(parents=True)
     shutil.copyfile(expected, destination / NAME)
+    if hashlib.sha256((destination / NAME).read_bytes()).hexdigest() != gates['artifact_sha256']:
+        shutil.rmtree(destination)
+        raise ValueError('Export artifact hash mismatch')
     provenance.record(source_sha, workflow_sha, destination, artifact_kind='unsigned-production-aab')
     digest = hashlib.sha256((destination / NAME).read_bytes()).hexdigest()
     (destination / 'SHA256SUMS').write_text(digest + '  ' + NAME + '\n', encoding='utf-8')
@@ -95,7 +111,8 @@ def prepare(source, workflow, destination, bundletool, runner=subprocess.run):
               'verified_identity': {'package': 'hu.dorian.predict', 'version_code': version, 'version_name': display, 'min_sdk': 26, 'target_sdk': 36, 'abis': sorted(abis)},
               'sha256': digest, 'bundletool_version': '1.18.3',
               'builder_signing': 'SDK creates runner-debug signed side output; only unsigned AAB exported',
-              'pending_gates': ['actual-hosted-build-review', 'artifact-il-ads', '16kb-native-and-splits', 'release-version-policy']}
+              'artifact_gates': gates,
+              'pending_gates': ['actual-hosted-build-review', '16kb-splits-and-runtime', 'approved-production-signing', 'release-version-policy']}
     (destination / 'preparation-report.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
     return report
 

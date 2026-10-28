@@ -75,9 +75,38 @@ class BuilderFixtureTests(unittest.TestCase):
         manifest = '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="hu.dorian.predict" android:versionCode="1" android:versionName="1.0"><uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36"/></manifest>'
         return subprocess.CompletedProcess(command, 0, manifest if 'dump' in command else 'FIXTURE validation', '')
 
+    def test_static_gate_rejects_same_application_and_workflow_checkout(self):
+        builder = tool('prepare_unsigned_aab')
+        with self.assertRaisesRegex(ValueError, 'distinct trusted workflow'):
+            builder.prepare(self.source, self.source, self.dest, self.jar, runner=self.runner)
+        self.assertFalse(self.dest.exists())
+
+    def test_copy_mutation_cannot_be_handed_off(self):
+        import shutil
+        original = shutil.copyfile
+        def corrupt(source,destination):
+            original(source,destination)
+            Path(destination).write_bytes(b'changed during copy fixture')
+        with patch.object(shutil,'copyfile',side_effect=corrupt):
+            with self.assertRaisesRegex(ValueError,'Export artifact hash mismatch'):
+                self.prepare()
+        self.assertFalse(self.dest.exists())
+
+    def test_static_gate_failure_prevents_export_creation(self):
+        builder = tool('prepare_unsigned_aab')
+        with patch.object(builder, 'BUNDLETOOL_SHA256', hashlib.sha256(self.jar.read_bytes()).hexdigest()), \
+             patch.object(builder, 'gate_inputs', return_value={}), \
+             patch.object(builder, 'artifact_gates', side_effect=ValueError('gate blocked')):
+            with self.assertRaisesRegex(ValueError, 'gate blocked'):
+                builder.prepare(self.source, ROOT, self.dest, self.jar, runner=self.runner)
+        self.assertFalse(self.dest.exists())
+
     def prepare(self, runner=None):
         builder = tool('prepare_unsigned_aab')
-        with patch.object(builder, 'BUNDLETOOL_SHA256', hashlib.sha256(self.jar.read_bytes()).hexdigest()):
+        def accepted(path, context, source_sha):
+            self.assertFalse(self.dest.exists())
+            return {'status': 'PASS', 'artifact_sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'fixture_only': True}
+        with patch.object(builder, 'gate_inputs', return_value={}), patch.object(builder, 'artifact_gates', side_effect=accepted), patch.object(builder, 'BUNDLETOOL_SHA256', hashlib.sha256(self.jar.read_bytes()).hexdigest()):
             return builder.prepare(self.source, ROOT, self.dest, self.jar, runner=runner or self.runner)
 
     def test_rejects_bad_candidate_archives_and_ambiguity_without_export(self):
@@ -211,7 +240,8 @@ class BuilderFixtureTests(unittest.TestCase):
         self.assertEqual('Release', manifest['configuration'])
         self.assertEqual({'package': 'hu.dorian.predict', 'version_code': '1', 'version_name': '1.0', 'min_sdk': 26, 'target_sdk': 36, 'abis': ['arm64-v8a']}, result['verified_identity'])
         self.assertFalse(result['release_accepted'])
-        self.assertIn('artifact-il-ads', result['pending_gates'])
+        self.assertEqual('PASS', result['artifact_gates']['status'])
+        self.assertIn('16kb-splits-and-runtime', result['pending_gates'])
         self.assertFalse(list(self.source.rglob('*-Signed.aab')))
         command = next(c for c,k in self.commands if c[0]=='dotnet')
         for value in ('-p:PredictBuildProfile=Production','-p:PredictTestAds=false','-p:AndroidPackageFormats=aab','-p:AndroidPackageFormat=aab','-p:AndroidKeyStore=false','-r','android-arm64'):
