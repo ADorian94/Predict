@@ -61,7 +61,10 @@ class WorkflowContracts(unittest.TestCase):
                          "source/bin/Release/net10.0-android36.0/android-arm64/*-Signed.apk",
                          "provenance/source-manifest.json", "provenance/apk-verification", "workflow-directory: workflow", "retention-days: 3", "if-no-files-found: error"):
             self.assertIn(required, text)
-        self.assertEqual(2, text.count("persist-credentials: false"))
+        # Each job has its own tool/app checkout pair; retain the original Dev contract.
+        dev, production = text.split("  prepare-unsigned-aab:", 1)
+        self.assertEqual(2, dev.count("persist-credentials: false"))
+        self.assertEqual(2, production.count("persist-credentials: false"))
         self.assertNotIn("${{ inputs.source_ref }}", text)  # Never embedded into shell source.
         self.assertNotIn("secrets.", text)
 

@@ -23,7 +23,10 @@ def verify_source(directory):
 
 
 
-def record(source_sha, workflow_sha, directory):
+def record(source_sha, workflow_sha, directory, artifact_kind="test-apk"):
+    if artifact_kind not in ("test-apk", "unsigned-production-aab"):
+        raise ValueError("Unknown artifact kind")
+    production = artifact_kind == "unsigned-production-aab"
     for sha in (source_sha, workflow_sha):
         if not re.fullmatch(r"[0-9a-f]{40}", sha) or sha == "0" * 40:
             raise ValueError("Expected a nonzero full lowercase commit SHA")
@@ -31,13 +34,14 @@ def record(source_sha, workflow_sha, directory):
         **TOOLCHAIN,
         "source_sha": source_sha,
         "workflow_sha": workflow_sha,
-        "artifact_name": "predict-dev-" + source_sha,
-        "build_profile": "Dev",
+        "artifact_kind": artifact_kind,
+        "artifact_name": ("predict-unsigned-production-" if production else "predict-dev-") + source_sha,
+        "build_profile": "Production" if production else "Dev",
         "configuration": "Release",
         "runtime": "android-arm64",
-        "test_ads": True,
+        "test_ads": not production,
         "trimmed": True,
-        "signing": "runner-debug",
+        "signing": "unsigned" if production else "runner-debug",
     }
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "source-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
