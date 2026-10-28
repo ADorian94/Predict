@@ -63,7 +63,7 @@ class BuilderFixtureTests(unittest.TestCase):
         if command[0] == 'git':
             if '--show-toplevel' in command:
                 return subprocess.CompletedProcess(command,0,str(kwargs['cwd'])+'\n','')
-            return subprocess.CompletedProcess(command, 0, ('a1' if Path(kwargs['cwd']) == self.source else 'b2')*20 + '\n', '')
+            return subprocess.CompletedProcess(command, 0, ('a1' if Path(kwargs['cwd']).resolve() == self.source.resolve() else 'b2')*20 + '\n', '')
         if command[0] == 'dotnet':
             p = self.source / 'bin/Release/net10.0-android36.0/android-arm64/hu.dorian.predict.aab'
             p.parent.mkdir(parents=True)
@@ -183,6 +183,22 @@ class BuilderFixtureTests(unittest.TestCase):
             self.prepare()
         self.assertEqual([], self.commands)
         self.assertFalse(self.dest.exists())
+
+    def test_source_path_alias_preserves_distinct_checkout_shas(self):
+        # Exercise the normalization boundary without symlink privileges or 8.3 names.
+        canonical_source = self.source.resolve()
+        self.source = self.source / '..' / 'source'
+        self.assertNotEqual(self.source, canonical_source)
+        self.assertEqual(self.source.resolve(), canonical_source)
+        result = self.prepare()
+        head_cwds = [Path(k['cwd']) for c, k in self.commands
+                     if c == ['git', 'rev-parse', '--verify', 'HEAD']]
+        self.assertEqual([canonical_source, ROOT.resolve()], head_cwds)
+        expected = {'source_sha': 'a1'*20, 'workflow_sha': 'b2'*20}
+        manifest = json.loads((self.dest/'source-manifest.json').read_text())
+        for record in (result, manifest):
+            with self.subTest(record='report' if record is result else 'manifest'):
+                self.assertEqual(expected, {key: record[key] for key in expected})
 
     def test_fixture_build_exports_exact_unsigned_allowlist_with_honest_report(self):
         result = self.prepare()
