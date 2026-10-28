@@ -116,7 +116,7 @@ class ReportSafetyTests(unittest.TestCase):
         import sys, tempfile
         from unittest.mock import patch
         mod = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(mod)
-        with tempfile.TemporaryDirectory(dir=Path.home()/'AppData/Local/hermes/cache/scratch') as tmp:
+        with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); artifact = root/'copy.apk'; artifact.write_bytes(b'invalid APK')
             decoder = root/'K4os.Compression.LZ4.dll'; decoder.write_bytes(b'decoder sentinel')
             helper = root/'dotnet.exe'; helper.write_bytes(b'helper sentinel')
@@ -137,9 +137,8 @@ class ReportSafetyTests(unittest.TestCase):
         import sys, tempfile, json
         from unittest.mock import patch, Mock
         mod = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(mod)
-        scratch = Path.home()/'AppData/Local/hermes/cache/scratch'
         for failure in ('serialize', 'write', 'replace', None):
-            with self.subTest(failure=failure), tempfile.TemporaryDirectory(dir=scratch) as tmp:
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp); artifact = root/'copy.apk'; artifact.write_bytes(b'APK sentinel')
                 report = root/'report.json'; report.write_bytes(b'prior report sentinel')
                 argv = ['ads', str(artifact), '--expected-mode', 'Dev', '--lz4-dll', str(root/'decoder'),
@@ -166,9 +165,8 @@ class ReportSafetyTests(unittest.TestCase):
 
     def test_cli_rejects_artifact_aliases_without_changing_bytes(self):
         import os, subprocess, sys, tempfile
-        scratch = Path.home()/'AppData/Local/hermes/cache/scratch'
         for alias in ('same', 'relative', 'resolved', 'hardlink'):
-            with self.subTest(alias=alias), tempfile.TemporaryDirectory(dir=scratch) as tmp:
+            with self.subTest(alias=alias), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 artifact = root/'copy.apk'
                 sentinel = b'invalid disposable APK: preserve these bytes'
@@ -192,5 +190,24 @@ class ReportSafetyTests(unittest.TestCase):
                 self.assertEqual(sorted(p.name for p in root.iterdir()),
                     ['child', 'copy.apk'] if alias == 'resolved' else
                     ['copy.apk', 'report.json'] if alias == 'hardlink' else ['copy.apk'])
+
+class PortableReportSafetyTests(unittest.TestCase):
+    def test_report_safety_without_hermes_home(self):
+        import tempfile
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / 'non-hermes-home'
+            hermes = home / 'AppData/Local/hermes/cache/scratch'
+            self.assertFalse(home.exists())
+            with patch.object(Path, 'home', return_value=home):
+                for name in (
+                    'test_collision_precedes_inspection_for_all_protected_inputs',
+                    'test_atomic_report_success_and_failure_cleanup',
+                    'test_cli_rejects_artifact_aliases_without_changing_bytes',
+                ):
+                    with self.subTest(test=name):
+                        ReportSafetyTests(name).debug()
+            self.assertFalse(hermes.exists())
+            self.assertFalse(home.exists())
 
 if __name__ == '__main__': unittest.main()
