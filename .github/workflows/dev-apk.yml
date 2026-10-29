@@ -3,6 +3,14 @@ name: Dev APK
 on:
   workflow_dispatch:
     inputs:
+      artifact_kind:
+        description: Test APK (default) or unsigned production-profile AAB preparation only
+        required: true
+        default: test-apk
+        type: choice
+        options:
+          - test-apk
+          - unsigned-production-aab
       source_ref:
         description: Application branch, tag or full commit SHA (not the workflow version)
         required: false
@@ -14,6 +22,7 @@ permissions:
 
 jobs:
   build:
+    if: ${{ inputs.artifact_kind == 'test-apk' || inputs.artifact_kind == '' }}
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
@@ -62,5 +71,62 @@ jobs:
             source/bin/Release/net10.0-android36.0/android-arm64/*-Signed.apk
             provenance/source-manifest.json
             provenance/apk-verification/
+          if-no-files-found: error
+          retention-days: 3
+
+  prepare-unsigned-aab:
+    if: ${{ inputs.artifact_kind == 'unsigned-production-aab' }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout trusted workflow tools
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: workflow
+          persist-credentials: false
+      - name: Checkout fresh selected application
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || 'main' }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: ./workflow/.github/actions/setup-android
+        with:
+          workflow-directory: workflow
+      - name: Run existing regression controls after pinned setup
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python workflow/tools/ci/run_regressions.py --root source
+          if ($LASTEXITCODE -ne 0) { throw 'Regressions failed' }
+      - name: Download pinned bundletool (builder independently checks official SHA256)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri 'https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar' -OutFile bundletool.jar
+      - name: Prepare only independently checked unsigned AAB
+        id: preparation
+        shell: pwsh
+        env:
+          EXPECTED_WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python workflow/tools/ci/prepare_unsigned_aab.py --source source --workflow workflow --destination unsigned-export --bundletool bundletool.jar
+          if ($LASTEXITCODE -ne 0) { throw 'Unsigned AAB preparation failed' }
+      - name: Upload preparation only (not release acceptance)
+        uses: actions/upload-artifact@v4
+        with:
+          name: predict-unsigned-production-${{ steps.preparation.outputs.source_sha }}
+          path: |
+            unsigned-export/hu.dorian.predict.aab
+            unsigned-export/SHA256SUMS
+            unsigned-export/source-manifest.json
+            unsigned-export/preparation-report.json
           if-no-files-found: error
           retention-days: 3

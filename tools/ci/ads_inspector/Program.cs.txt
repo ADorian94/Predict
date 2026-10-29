@@ -1,0 +1,91 @@
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
+using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
+using System.Text.Json;
+using K4os.Compression.LZ4;
+
+try {
+    if (args.Length != 2 || (args[1] != "Dev" && args[1] != "Production")) throw new Exception("expected explicit mode");
+    var input = File.ReadAllBytes(args[0]);
+    if (input.Length < 12 || input.Length > 16777216 || BitConverter.ToUInt32(input) != 0x5a4c4158) throw new Exception("unsupported XALZ header");
+    int len = BitConverter.ToInt32(input, 8);
+    if (len < 1 || len > 16777216) throw new Exception("unsafe LZ4 output bound");
+    byte[] dll = new byte[len];
+    if (LZ4Codec.Decode(input, 12, input.Length - 12, dll, 0, len) != len) throw new Exception("LZ4 output length mismatch");
+    using var pe = new PEReader(new MemoryStream(dll));
+    if (!pe.HasMetadata || pe.PEHeaders.CorHeader == null || pe.PEHeaders.CorHeader.ManagedNativeHeaderDirectory.Size != 0) throw new Exception("unsupported native/AOT shape");
+    var md = pe.GetMetadataReader();
+    if (md.GetString(md.GetAssemblyDefinition().Name) != "Predict") throw new Exception("unexpected assembly identity");
+    string TypeName(EntityHandle h) {
+        if (h.Kind == HandleKind.TypeReference) { var t = md.GetTypeReference((TypeReferenceHandle)h); return md.GetString(t.Namespace) + "." + md.GetString(t.Name); }
+        if (h.Kind == HandleKind.TypeDefinition) { var t = md.GetTypeDefinition((TypeDefinitionHandle)h); return md.GetString(t.Namespace) + "." + md.GetString(t.Name); }
+        return "unsupported";
+    }
+    string Target(int token) {
+        var h = MetadataTokens.EntityHandle(token);
+        if (h.Kind != HandleKind.MemberReference) return "unsupported";
+        var m = md.GetMemberReference((MemberReferenceHandle)h);
+        if (m.Parent.Kind != HandleKind.TypeReference) return "unsupported";
+        var t = md.GetTypeReference((TypeReferenceHandle)m.Parent);
+        if (t.ResolutionScope.Kind != HandleKind.AssemblyReference) return "unsupported";
+        var scope = md.GetAssemblyReference((AssemblyReferenceHandle)t.ResolutionScope);
+        if (md.GetString(scope.Name) != "Plugin.MauiMtAdmob") return "unsupported";
+        // Exact instance(void,string) signature: no optional/default/extra arguments.
+        var sig = md.GetBlobBytes(m.Signature);
+        if (!sig.SequenceEqual(new byte[] {0x20, 1, 1, 0x0e})) return "unsupported";
+        return TypeName(m.Parent) + "::" + md.GetString(m.Name);
+    }
+    var ops = typeof(OpCodes).GetFields(BindingFlags.Public | BindingFlags.Static).Where(f => f.FieldType == typeof(OpCode)).Select(f => (OpCode)f.GetValue(null)!).ToDictionary(o => unchecked((ushort)o.Value));
+    var evidence = new List<object>();
+    int banners = 0, interstitials = 0; bool mismatch = false, unsupported = false;
+    foreach (var th in md.TypeDefinitions) {
+        var type = md.GetTypeDefinition(th); string tn = TypeName(th);
+        foreach (var mh in type.GetMethods()) {
+            var m = md.GetMethodDefinition(mh); if (m.RelativeVirtualAddress == 0) continue;
+            string mn = md.GetString(m.Name);
+            var il = pe.GetMethodBody(m.RelativeVirtualAddress).GetILBytes()!;
+            string? previous = null; int previousAt = -1; int previousToken = 0;
+            for (int i = 0; i < il.Length;) {
+                int at = i; ushort code = il[i++];
+                if (code == 0xfe) { if (i >= il.Length) throw new Exception("truncated opcode"); code = (ushort)(0xfe00 | il[i++]); }
+                if (!ops.TryGetValue(code, out var op)) throw new Exception("unknown IL opcode");
+                int n = op.OperandType switch {
+                    OperandType.InlineNone => 0,
+                    OperandType.ShortInlineBrTarget or OperandType.ShortInlineI or OperandType.ShortInlineVar => 1,
+                    OperandType.InlineVar => 2,
+                    OperandType.InlineI8 or OperandType.InlineR => 8,
+                    OperandType.InlineSwitch => i + 4 <= il.Length && BitConverter.ToInt32(il, i) >= 0 && BitConverter.ToInt32(il, i) <= (il.Length - i - 4) / 4 ? 4 + 4 * BitConverter.ToInt32(il, i) : throw new Exception("invalid switch"),
+                    _ => 4
+                };
+                if (n > il.Length - i) throw new Exception("truncated operand");
+                string? current = null; int tok = n == 4 ? BitConverter.ToInt32(il, i) : 0;
+                if (op == OpCodes.Ldstr) {
+                    if ((tok & unchecked((int)0xff000000)) != 0x70000000) throw new Exception("invalid string token");
+                    current = md.GetUserString(MetadataTokens.UserStringHandle(tok & 0xffffff));
+                }
+                if (op == OpCodes.Call || op == OpCodes.Callvirt) {
+                    string target = Target(tok);
+                    bool banner = target == "Plugin.MauiMtAdmob.Controls.MTAdView::set_AdsId";
+                    bool interstitial = target == "Plugin.MauiMtAdmob.Interfaces.IMTAdmob::LoadInterstitial";
+                    if (banner || interstitial) {
+                        if (banner) banners++; else interstitials++;
+                        bool location = banner ? tn == "Predict.Services.ConsentedBanner" && mn == "UpdateBanner" : tn == "Predict.Services.AndroidAdsConsentBackend" && mn == "LoadInterstitial";
+                        if (previous == null || !location) unsupported = true;
+                        string expected = args[1] == "Production" ? (banner ? "ca-app-pub-3012910791046560/3302176099" : "ca-app-pub-3012910791046560/3511582164") : (banner ? "ca-app-pub-3940256099942544/6300978111" : "ca-app-pub-3940256099942544/1033173712");
+                        bool match = previous == expected; mismatch |= !match;
+                        evidence.Add(new { type = tn, method = mn, method_token = $"0x{MetadataTokens.GetToken(mh):x8}", consumer_token = $"0x{tok:x8}", string_token = $"0x{previousToken:x8}", ldstr_offset = previousAt, call_offset = at, target, actual = previous, expected, match });
+                    }
+                }
+                previous = current; previousAt = at; previousToken = tok; i += n;
+            }
+        }
+    }
+    string status = unsupported || banners != 1 || interstitials != 1 ? "INCONCLUSIVE" : mismatch ? "FAIL" : "PASS";
+    Console.WriteLine(JsonSerializer.Serialize(new { status, banners, interstitials, evidence, extracted_pe_sha256 = Convert.ToHexString(SHA256.HashData(dll)).ToLowerInvariant(), lz4_assembly = typeof(LZ4Codec).Assembly.FullName, scope = "immediate managed plugin arguments only; not general dataflow/AOT" }));
+    return status == "PASS" ? 0 : status == "FAIL" ? 1 : 2;
+} catch (Exception e) {
+    Console.WriteLine(JsonSerializer.Serialize(new {status = "INCONCLUSIVE", reason = e.Message})); return 2;
+}

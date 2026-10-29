@@ -47,7 +47,7 @@ From source/, the composite first invokes workflow/tools/ci/record_source.py
 
 ```powershell
 dotnet build Predict.csproj -c Release -f net10.0-android36.0 `
-  -p:PredictTestAds=true -p:AndroidPackageFormats=apk `
+  -p:PredictBuildProfile=Dev -p:PredictTestAds=true -p:AndroidPackageFormats=apk `
   -p:RuntimeIdentifier=android-arm64 -p:PublishTrimmed=true `
   -p:AndroidKeyStore=false -p:WarningsAsErrors=XA0141 `
   "-p:AndroidSdkDirectory=$env:ANDROID_HOME" "-p:JavaSdkDirectory=$env:JAVA_HOME"
