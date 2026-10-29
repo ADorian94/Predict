@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,6 +46,8 @@ class ProvenanceTests(unittest.TestCase):
                 record('a1'*20, 'b2'*20, p, artifact_kind='release')
 
 class BuilderFixtureTests(unittest.TestCase):
+    fixture_version = '1'
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
@@ -53,6 +56,10 @@ class BuilderFixtureTests(unittest.TestCase):
         self.source.mkdir()
         for name in ('Predict.csproj', 'global.json'):
             (self.source / name).write_bytes((ROOT / name).read_bytes())
+        project_path = self.source / 'Predict.csproj'
+        project = ET.parse(project_path)
+        project.find('.//ApplicationVersion').text = self.fixture_version
+        project.write(project_path, encoding='utf-8')
         self.jar = self.base / 'bundletool.jar'
         self.jar.write_bytes(b'FIXTURE-NOT-A-REAL-JAR')
         self.dest = self.base / 'export'
@@ -72,7 +79,7 @@ class BuilderFixtureTests(unittest.TestCase):
                     z.writestr(name, b'FIXTURE')
             p.with_name('hu.dorian.predict-Signed.aab').write_bytes(b'debug side output fixture')
             return subprocess.CompletedProcess(command, 0, '', '')
-        manifest = '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="hu.dorian.predict" android:versionCode="1" android:versionName="1.0"><uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36"/></manifest>'
+        manifest = f'<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="hu.dorian.predict" android:versionCode="{self.fixture_version}" android:versionName="1.0"><uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36"/></manifest>'
         return subprocess.CompletedProcess(command, 0, manifest if 'dump' in command else 'FIXTURE validation', '')
 
     def test_static_gate_rejects_same_application_and_workflow_checkout(self):
@@ -185,7 +192,7 @@ class BuilderFixtureTests(unittest.TestCase):
                 def bad(command, **kwargs):
                     result = self.runner(command, **kwargs)
                     if command[0] == 'java' and 'dump' in command:
-                        replacements = {'package': ('hu.dorian.predict','hu.other'), 'version': ('versionCode="1"','versionCode="2"'), 'min': ('minSdkVersion="26"','minSdkVersion="25"'), 'target': ('targetSdkVersion="36"','targetSdkVersion="35"')}
+                        replacements = {'package': ('hu.dorian.predict','hu.other'), 'version': (f'versionCode="{self.fixture_version}"',f'versionCode="{int(self.fixture_version) + 1}"'), 'min': ('minSdkVersion="26"','minSdkVersion="25"'), 'target': ('targetSdkVersion="36"','targetSdkVersion="35"')}
                         if value in replacements:
                             result.stdout = result.stdout.replace(*replacements[value])
                     if command[0] == 'dotnet' and value == 'abi':
@@ -238,7 +245,7 @@ class BuilderFixtureTests(unittest.TestCase):
         self.assertEqual('unsigned-production-aab', manifest['artifact_kind'])
         self.assertEqual('Production', manifest['build_profile'])
         self.assertEqual('Release', manifest['configuration'])
-        self.assertEqual({'package': 'hu.dorian.predict', 'version_code': '1', 'version_name': '1.0', 'min_sdk': 26, 'target_sdk': 36, 'abis': ['arm64-v8a']}, result['verified_identity'])
+        self.assertEqual({'package': 'hu.dorian.predict', 'version_code': self.fixture_version, 'version_name': '1.0', 'min_sdk': 26, 'target_sdk': 36, 'abis': ['arm64-v8a']}, result['verified_identity'])
         self.assertFalse(result['release_accepted'])
         self.assertEqual('PASS', result['artifact_gates']['status'])
         self.assertIn('16kb-splits-and-runtime', result['pending_gates'])
@@ -248,3 +255,32 @@ class BuilderFixtureTests(unittest.TestCase):
             self.assertIn(value, command)
         self.assertTrue(any('validate' in c for c,k in self.commands))
         self.assertTrue(any('dump' in c for c,k in self.commands))
+
+class FixtureVersionRegressionTests(unittest.TestCase):
+    def check_source_versions(self, method):
+        for version in ('1', '2', '17'):
+            with self.subTest(source_version=version):
+                class ExplicitVersionFixture(BuilderFixtureTests):
+                    fixture_version = version
+
+                    def setUp(self):
+                        super().setUp()
+                        project_path = self.source / 'Predict.csproj'
+                        project = ET.parse(project_path)
+                        project.find('.//ApplicationVersion').text = self.fixture_version
+                        project.write(project_path, encoding='utf-8')
+
+                # Explicit method selection avoids CLI -k filtering nested coverage away.
+                result = unittest.TestResult()
+                ExplicitVersionFixture(method).run(result)
+                self.assertEqual(1, result.testsRun)
+                self.assertEqual([], result.skipped)
+                self.assertTrue(result.wasSuccessful(), '\n'.join(
+                    detail for _, detail in result.failures + result.errors))
+
+    def test_happy_handoff_with_explicit_source_versions(self):
+        self.check_source_versions('test_fixture_build_exports_exact_unsigned_allowlist_with_honest_report')
+
+    def test_manifest_drift_rejected_without_output_for_source_versions(self):
+        self.check_source_versions('test_rejects_manifest_identity_version_sdk_and_abi_drift')
+
