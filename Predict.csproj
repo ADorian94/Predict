@@ -10,8 +10,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<ApplicationTitle>Predict</ApplicationTitle>
-		<ApplicationId>hu.dorian.predict</ApplicationId>
+		<ApplicationTitle>Predict Screenshots</ApplicationTitle>
+		<ApplicationId>hu.dorian.predict.screenshots</ApplicationId>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>2</ApplicationVersion>
 

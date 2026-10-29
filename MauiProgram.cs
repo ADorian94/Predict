@@ -30,12 +30,8 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<AppSettingsService>();
         builder.Services.AddSingleton<ResultContext>();
-#if ANDROID
-        builder.Services.AddSingleton<AndroidAdsConsentBackend>();
-        builder.Services.AddSingleton(sp => sp.GetRequiredService<AndroidAdsConsentBackend>().Coordinator);
-#else
+        // Temporary isolated screenshot app: no Android advertising backend is registered.
         builder.Services.AddSingleton<AdsConsentCoordinator>();
-#endif
 
         builder.Services.AddTransient<MainViewModel>();
         builder.Services.AddTransient<ResultViewModel>();

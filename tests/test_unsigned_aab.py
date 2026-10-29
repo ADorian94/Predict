@@ -58,6 +58,10 @@ class BuilderFixtureTests(unittest.TestCase):
             (self.source / name).write_bytes((ROOT / name).read_bytes())
         project_path = self.source / 'Predict.csproj'
         project = ET.parse(project_path)
+        # Production-builder fixture identity is explicit, independent of this
+        # isolated screenshot app. Keep all production guard assertions intact.
+        project.find('.//ApplicationId').text = 'hu.dorian.predict'
+        project.find('.//ApplicationTitle').text = 'Predict'
         project.find('.//ApplicationVersion').text = self.fixture_version
         project.write(project_path, encoding='utf-8')
         self.jar = self.base / 'bundletool.jar'
