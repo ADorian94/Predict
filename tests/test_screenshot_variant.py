@@ -8,6 +8,9 @@ class ScreenshotVariant(unittest.TestCase):
         p = ET.parse(ROOT / 'Predict.csproj')
         self.assertEqual('hu.dorian.predict.screenshots', p.findtext('.//ApplicationId'))
         self.assertEqual('Predict Screenshots', p.findtext('.//ApplicationTitle'))
+        manifest = ET.parse(ROOT / 'Platforms/Android/AndroidManifest.xml')
+        self.assertEqual('Predict Screenshots', manifest.find('application').get(
+            '{http://schemas.android.com/apk/res/android}label'))
         self.assertEqual('2', p.findtext('.//ApplicationVersion'))
         self.assertEqual('1.0', p.findtext('.//ApplicationDisplayVersion'))
     def test_only_default_coordinator_is_registered(self):
