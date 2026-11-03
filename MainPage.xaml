@@ -53,19 +53,28 @@
                         <Label Text="{Binding WeightLabel}"
                                FontSize="11" FontAttributes="Bold"
                                TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
-                        <Entry x:Name="WeightInput"
-                               HandlerChanged="OnWeightInputHandlerChanged"
-                               HandlerChanging="OnWeightInputHandlerChanging"
-                               Completed="OnWeightInputCompleted"
-                               Text="{Binding WeightText}"
-                               Placeholder="120"
-                               Keyboard="Numeric"
-                               BackgroundColor="Transparent"
-                               TextColor="{DynamicResource TextPrimary}"
-                               PlaceholderColor="{DynamicResource PlaceholderText}"
-                               FontSize="28" FontAttributes="Bold"
-                               HorizontalTextAlignment="Center"
-                               HeightRequest="56"/>
+                        <Grid>
+                            <Entry x:Name="WeightInput"
+                                   HandlerChanged="OnWeightInputHandlerChanged"
+                                   HandlerChanging="OnWeightInputHandlerChanging"
+                                   Completed="OnWeightInputCompleted"
+                                   Text="{Binding WeightText}"
+                                   Placeholder="120"
+                                   Keyboard="Numeric"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{DynamicResource TextPrimary}"
+                                   PlaceholderColor="{DynamicResource PlaceholderText}"
+                                   FontSize="28" FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   HeightRequest="56"/>
+                            <!-- Permanent themed line; native underline stays disabled.
+                                 Overlay preserves the input slot and error-label spacing. -->
+                            <BoxView x:Name="WeightUnderline"
+                                     Color="{DynamicResource AccentLight}"
+                                     HeightRequest="2" Margin="4,0"
+                                     HorizontalOptions="Fill" VerticalOptions="Bottom"
+                                     InputTransparent="True"/>
+                        </Grid>
                         <Label Text="{Binding WeightError}"
                                FontSize="13" TextColor="{DynamicResource ErrorColor}"
                                IsVisible="{Binding WeightError, Converter={StaticResource StringNotEmptyConverter}}"/>
