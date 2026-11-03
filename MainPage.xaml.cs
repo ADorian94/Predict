@@ -6,18 +6,27 @@ public partial class MainPage : ContentPage
     private bool _isAppearing;
     private bool _entranceCompleted;
     private bool _consentQueued;
+#if ANDROID
+    private Entry? _weightInput;
+    private Platforms.Android.WeightEntryHandler? _weightInputObserver;
+#endif
 
     public MainPage(ViewModels.MainViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
         Loaded += (_, _) => QueueAnalyticsConsent();
+#if ANDROID
+        Loaded += OnWeightInputLoaded;
+        Unloaded += OnWeightInputUnloaded;
+#endif
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         _isAppearing = true;
+        AttachWeightInputObserver();
         (BindingContext as ViewModels.MainViewModel)?.RefreshUnit();
 
         if (_hasAppeared)
@@ -64,6 +73,7 @@ public partial class MainPage : ContentPage
     protected override void OnDisappearing()
     {
         _isAppearing = false;
+        DetachWeightInputObserver();
         base.OnDisappearing();
     }
 
@@ -102,6 +112,52 @@ public partial class MainPage : ContentPage
             _consentQueued = false;
             System.Diagnostics.Debug.WriteLine($"Analytics consent dispatch failed: {ex}");
         }
+    }
+
+    private void OnWeightInputHandlerChanged(object sender, EventArgs e)
+    {
+#if ANDROID
+        if (sender is Entry entry)
+        {
+            _weightInput = entry;
+            Platforms.Android.WeightEntryHandler.RemoveUnderline(entry);
+            AttachWeightInputObserver();
+        }
+#endif
+    }
+
+    private void OnWeightInputHandlerChanging(object sender, EventArgs e)
+    {
+        DetachWeightInputObserver();
+    }
+
+    private void OnWeightInputLoaded(object? sender, EventArgs e) => AttachWeightInputObserver();
+
+    private void OnWeightInputUnloaded(object? sender, EventArgs e) => DetachWeightInputObserver();
+
+    private void OnWeightInputCompleted(object sender, EventArgs e)
+    {
+#if ANDROID
+        (sender as Entry)?.Unfocus();
+#endif
+    }
+
+    private void AttachWeightInputObserver()
+    {
+#if ANDROID
+        // Handler creation, Loaded and Appearing can arrive in either order.
+        if (!_isAppearing || !IsLoaded || _weightInputObserver is not null) return;
+        if (_weightInput?.Handler?.PlatformView is global::Android.Widget.EditText native)
+            _weightInputObserver = new Platforms.Android.WeightEntryHandler(_weightInput, native);
+#endif
+    }
+
+    private void DetachWeightInputObserver()
+    {
+#if ANDROID
+        _weightInputObserver?.Dispose();
+        _weightInputObserver = null;
+#endif
     }
 
     private void CalcButton_Clicked(object sender, EventArgs e)

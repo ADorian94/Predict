@@ -58,8 +58,8 @@ public partial class ResultViewModel : ObservableObject
 
     public string WeightDisplay => Result is null ? "" :
         Result.IsLbs
-            ? $"{Result.Weight / 0.45359237:0.#} lbs"
-            : $"{Result.Weight:0.#} kg";
+            ? $"{Result.Weight / 0.45359237:0.##} lbs"
+            : $"{Result.Weight:0.##} kg";
 
     public IReadOnlyList<FormulaEntry> Formulas => Result?.Formulas ?? [];
 

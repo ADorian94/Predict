@@ -5,6 +5,7 @@ public record HistoryEntry(
     double BestEstimate, string Unit, bool IsLbs = false)
 {
     public string DateDisplay  => Date.ToString("yyyy.MM.dd HH:mm");
-    public string InputDisplay => $"{Weight:0.#} {Unit} x {Reps} rep @ {Rpe:0.0}";
+    // Weight is persisted in canonical kg; IsLbs preserves the entry's original display unit.
+    public string InputDisplay => $"{(IsLbs ? Weight / 0.45359237 : Weight):0.##} {Unit} x {Reps} rep @ {Rpe:0.0}";
     public string ResultDisplay => $"Best: {BestEstimate:0.0} {Unit}";
 }

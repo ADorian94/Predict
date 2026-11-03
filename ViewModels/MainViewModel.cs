@@ -75,10 +75,35 @@ public partial class MainViewModel : ObservableObject
         HapticService.Click();
     }
 
-    partial void OnWeightTextChanged(string value) => WeightError = string.Empty;
-    partial void OnRepsTextChanged(string value)   => RepsError   = string.Empty;
+    partial void OnWeightTextChanged(string? oldValue, string newValue)
+    {
+        // Reject the whole edit instead of silently truncating a pasted weight.
+        if (!System.Text.RegularExpressions.Regex.IsMatch(newValue, @"\A[0-9]*(?:[.,][0-9]{0,2})?\z"))
+        {
+            WeightText = oldValue ?? string.Empty;
+            WeightError = "Use digits and up to two decimal places (dot or comma).";
+            return;
+        }
+        if (newValue.StartsWith('.') || newValue.StartsWith(','))
+            WeightText = "0" + newValue;
+        WeightError = string.Empty;
+    }
 
-    [RelayCommand]
+    partial void OnRepsTextChanged(string value)
+    {
+        RepsError = string.Empty;
+        OnPropertyChanged(nameof(CanIncrementReps));
+        OnPropertyChanged(nameof(CanDecrementReps));
+        IncrementRepsCommand.NotifyCanExecuteChanged();
+        DecrementRepsCommand.NotifyCanExecuteChanged();
+    }
+
+    public bool CanIncrementReps => string.IsNullOrWhiteSpace(RepsText)
+        || (int.TryParse(RepsText, out var reps) && reps >= AppConstants.MinReps && reps < AppConstants.MaxReps);
+    public bool CanDecrementReps => int.TryParse(RepsText, out var reps)
+        && reps > AppConstants.MinReps && reps <= AppConstants.MaxReps;
+
+    [RelayCommand(CanExecute = nameof(CanIncrementReps))]
     private void IncrementReps()
     {
         if (int.TryParse(RepsText, out var r) && r < AppConstants.MaxReps)
@@ -93,7 +118,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanDecrementReps))]
     private void DecrementReps()
     {
         if (int.TryParse(RepsText, out var r) && r > AppConstants.MinReps)
@@ -145,10 +170,12 @@ public partial class MainViewModel : ObservableObject
 
     private bool TryParseWeight(out double weight)
     {
-        if (string.IsNullOrWhiteSpace(WeightText)) { weight = 0; return false; }
+        if (string.IsNullOrWhiteSpace(WeightText)
+            || !System.Text.RegularExpressions.Regex.IsMatch(WeightText, @"\A[0-9]+(?:[.,][0-9]{0,2})?\z"))
+        { weight = 0; return false; }
         var normalized = WeightText.Replace(',', '.');
-        if (!double.TryParse(normalized, System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out weight) || weight <= 0)
+        if (!double.TryParse(normalized, System.Globalization.NumberStyles.AllowDecimalPoint,
+            System.Globalization.CultureInfo.InvariantCulture, out weight) || !double.IsFinite(weight) || weight <= 0)
             return false;
         return weight <= (IsLbs ? AppConstants.MaxWeightLbs : AppConstants.MaxWeightKg);
     }

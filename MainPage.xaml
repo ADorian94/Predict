@@ -6,7 +6,8 @@
              xmlns:conv="clr-namespace:Predict.Converters"
              x:Class="Predict.MainPage"
              BackgroundColor="{DynamicResource PageBackground}"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             HideSoftInputOnTapped="True">
 
     <ContentPage.Resources>
         <conv:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
@@ -52,7 +53,11 @@
                         <Label Text="{Binding WeightLabel}"
                                FontSize="11" FontAttributes="Bold"
                                TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
-                        <Entry Text="{Binding WeightText}"
+                        <Entry x:Name="WeightInput"
+                               HandlerChanged="OnWeightInputHandlerChanged"
+                               HandlerChanging="OnWeightInputHandlerChanging"
+                               Completed="OnWeightInputCompleted"
+                               Text="{Binding WeightText}"
                                Placeholder="120"
                                Keyboard="Numeric"
                                BackgroundColor="Transparent"
@@ -79,8 +84,14 @@
                                TextColor="{DynamicResource LabelMuted}" CharacterSpacing="2"/>
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,4,0,4">
                             <Border Grid.Column="0" WidthRequest="52" HeightRequest="52" StrokeThickness="1.5"
+                                    IsEnabled="{Binding CanDecrementReps}"
                                     Background="{DynamicResource CardAltBackgroundBrush}"
                                     Stroke="{DynamicResource CardBorderBrush}">
+                                <Border.Triggers>
+                                    <Trigger TargetType="Border" Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.35"/>
+                                    </Trigger>
+                                </Border.Triggers>
                                 <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding DecrementRepsCommand}"/>
@@ -97,8 +108,14 @@
                                    HorizontalTextAlignment="Center"
                                    VerticalOptions="Center"/>
                             <Border Grid.Column="2" WidthRequest="52" HeightRequest="52" StrokeThickness="1.5"
+                                    IsEnabled="{Binding CanIncrementReps}"
                                     Background="{DynamicResource CardAltBackgroundBrush}"
                                     Stroke="{DynamicResource CardBorderBrush}">
+                                <Border.Triggers>
+                                    <Trigger TargetType="Border" Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.35"/>
+                                    </Trigger>
+                                </Border.Triggers>
                                 <Border.StrokeShape><shapes:RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding IncrementRepsCommand}"/>
