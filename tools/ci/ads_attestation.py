@@ -122,7 +122,7 @@ def inspect(stored, mode, dotnet, lz4):
     with tempfile.TemporaryDirectory(prefix='ads-inspector-') as tmp:
         root = Path(tmp)
         # Independent directory deliberately avoids the app global.json and Compile glob.
-        (root / 'global.json').write_text('{"sdk":{"version":"9.0.100","rollForward":"latestFeature"}}')
+        (root / 'global.json').write_text('{"sdk":{"version":"9.0.319","rollForward":"disable"}}')
         (root / 'Program.cs').write_bytes((templates / 'Program.cs.txt').read_bytes())
         (root / 'Inspector.csproj').write_bytes((templates / 'Inspector.csproj.txt').read_bytes())
         (root / 'input.bin').write_bytes(stored)
