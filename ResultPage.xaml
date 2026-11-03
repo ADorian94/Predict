@@ -4,6 +4,7 @@
              xmlns:shapes="clr-namespace:Microsoft.Maui.Controls.Shapes;assembly=Microsoft.Maui.Controls"
              xmlns:vm="clr-namespace:Predict.ViewModels"
              xmlns:models="clr-namespace:Predict.Models"
+             xmlns:controls="clr-namespace:Predict.Controls"
              xmlns:services="clr-namespace:Predict.Services"
              x:Class="Predict.ResultPage"
              BackgroundColor="{DynamicResource PageBackground}"
@@ -49,12 +50,12 @@
                         Background="{DynamicResource CardBackgroundBrush}"
                         Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                        <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                    <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="8">
+                        <VerticalStackLayout Grid.Column="0" HorizontalOptions="Fill">
                             <Label Text="WEIGHT" FontSize="11" FontAttributes="Bold"
                                    TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
-                            <Label Text="{Binding WeightDisplay}"
-                                   FontSize="20" FontAttributes="Bold"
+                            <controls:SummaryValueLabel Text="{Binding WeightDisplay}"
+                                   FontSize="20" FontAttributes="Bold" LineBreakMode="NoWrap" MaxLines="1" HorizontalOptions="Fill"
                                    TextColor="{DynamicResource AccentLight}" HorizontalTextAlignment="Center"/>
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">

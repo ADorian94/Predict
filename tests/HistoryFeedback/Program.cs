@@ -48,6 +48,19 @@ foreach (var lbs in new[] { false, true })
         Equal(kg, result.Weight);
     });
 }
+foreach(var culture in new[]{"en-US","hu-HU"}) foreach(var lbs in new[]{false,true})
+foreach(var entered in new[]{0.56,120.55,lbs?2203.99:999.99,lbs?2204:1000})
+{
+ Test($"summary full numeric value {culture} {entered} lbs={lbs}",()=>{
+  var old=CultureInfo.CurrentCulture;
+  try {
+   CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo(culture);
+   var result=OneRmCalculator.Calculate(lbs?entered*0.45359237:entered,20,8,lbs);
+   var vm=new ResultViewModel(new ResultContext{Current=result},new AdsConsentCoordinator());vm.CancelAnimation();
+   Equal(entered.ToString("0.##",CultureInfo.CurrentCulture)+(lbs?" lbs":" kg"),vm.WeightDisplay);
+  } finally {CultureInfo.CurrentCulture=old;}
+ });
+}
 Test("old JSON loads without migration, retains saved units and round-trips", () =>
 {
     const string legacy = """[{"Date":"2026-10-25T11:16:00","Weight":100,"Reps":5,"Rpe":8,"BestEstimate":260,"Unit":"lbs","IsLbs":true},{"Date":"2026-10-25T10:16:00","Weight":100.25,"Reps":5,"Rpe":8,"BestEstimate":120,"Unit":"kg"}]""";

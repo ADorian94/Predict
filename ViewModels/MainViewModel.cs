@@ -87,9 +87,9 @@ public partial class MainViewModel : ObservableObject
         if (!System.Text.RegularExpressions.Regex.IsMatch(newValue, @"\A[0-9]*(?:[.,][0-9]{0,2})?\z"))
         {
             WeightText = oldValue ?? string.Empty;
-            WeightError = System.Text.RegularExpressions.Regex.IsMatch(newValue, @"\A-[0-9]+(?:[.,][0-9]{0,2})?\z")
-                ? $"Enter a weight greater than 0 {WeightUnit}!"
-                : "Use digits and up to two decimal places (dot or comma).";
+            // Errors must describe the displayed, accepted value, not a rejected edit.
+            // Estimate still validates the actual lower/upper bounds.
+            WeightError = string.Empty;
             return;
         }
         if (newValue.StartsWith('.') || newValue.StartsWith(','))

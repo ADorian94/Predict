@@ -36,7 +36,7 @@ Eq(("12.5", 2), Edit("1.5", 1, 1, "2"), "mid-string insertion not moved to end")
 Eq(("17.5", 2), Edit("12.5", 1, 2, "7"), "mid-string selection replacement");
 Eq(("12.5", 1), Edit("172.5", 1, 2, ""), "mid-string delete");
 foreach (var text in new[] {".123", ",123", ".x", "-1", "1.234", "1..", "1,2.3"})
-    Eq<Java.Lang.ICharSequence?>(null, filter.FilterFormatted(new SpannableStringBuilder(text), 0, text.Length, new SpannableStringBuilder(""), 0, 0), "rejected candidate delegated unchanged " + text);
+    Eq("", filter.FilterFormatted(new SpannableStringBuilder(text), 0, text.Length, new SpannableStringBuilder(""), 0, 0)?.ToString(), "invalid candidate rejected before binding " + text);
 Eq(("1.23", 4), Edit("1.23", 4, 4, "4"), "rejected third decimal unchanged");
 Eq<Java.Lang.ICharSequence?>(null, filter.FilterFormatted(new SpannableStringBuilder("2"), 0, 1, new SpannableStringBuilder("1.5"), 1, 1), "ordinary edit preserves original spans");
 var composed = new SpannableStringBuilder("x.5y") { CompositionStart = 1, CompositionEnd = 3 };
@@ -59,5 +59,11 @@ Eq(SpanTypes.Composing | SpanTypes.ExclusiveExclusive, withSpans.GetSpanFlags(co
 Eq(-1, withSpans.GetSpanStart(selectionMarker), "selection NoCopySpan not copied");
 Eq(1, withSpans.GetSpanStart(composingStyle), "overlapping composition clipped and shifted");
 Eq(3, withSpans.GetSpanEnd(composingStyle), "overlapping composition end clipped");
+foreach (var sep in new[] {".", ","}) {
+ Eq("", filter.FilterFormatted(new SpannableStringBuilder("7"),0,1,new SpannableStringBuilder("0"+sep+"56"),4,4)?.ToString(), "third decimal never reaches VM");
+ Eq(("0"+sep+"56",4), Edit("0"+sep+"56",4,4,"7"), "rejected third digit keeps caret");
+ Eq(("10"+sep+"25",2), Edit("10"+sep+"25",2,2,"x"), "rejected middle edit keeps caret");
+ Eq(("10"+sep+"25",5), Edit("10"+sep+"25",0,5,"1e3"), "rejected paste retains complete value");
+}
 Console.WriteLine($"{passed} passed / {failed} failed");
 return failed == 0 ? 0 : 1;

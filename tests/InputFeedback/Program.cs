@@ -21,7 +21,7 @@ foreach(var culture in new[]{"en-US","hu-HU"}) {
  foreach(var text in new[]{"100.25","100,25","0.01","999.99"}) { vm.WeightText=text; await vm.CalculateCommand.ExecuteAsync(null); Check(context.Current!=null && Math.Abs(context.Current.Weight-double.Parse(text.Replace(',','.'),CultureInfo.InvariantCulture))<1e-10,culture+" exact calculation "+text); }
  vm.WeightText=".5"; Check(vm.WeightText=="0.5",culture+" dot leading zero");
  vm.WeightText=",5"; Check(vm.WeightText=="0,5",culture+" comma leading zero");
- foreach(var bad in new[]{"1.234","1,234","1e2","NaN","Infinity","1.2.3","-1","+2","1 000"}) { vm.WeightText="10.25"; vm.WeightText=bad; Check(vm.WeightText=="10.25" && !string.IsNullOrWhiteSpace(vm.WeightError),culture+" rejects edit "+bad); }
+ foreach(var bad in new[]{"1.234","1,234","1e2","NaN","Infinity","1.2.3","-1","+2","1 000"}) { vm.WeightText="10.25"; vm.WeightText=bad; Check(vm.WeightText=="10.25" && vm.WeightError=="",culture+" rejects edit "+bad); }
  vm.WeightText="1000.01"; int saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null); Check(HistoryService.Saves==saves && vm.WeightError.Length>0,culture+" kg upper bound");
  vm.IsLbs=true; vm.WeightText="220.46"; await vm.CalculateCommand.ExecuteAsync(null); Check(Math.Abs(context.Current!.Weight-220.46*0.45359237)<1e-10,culture+" lbs retains both decimals");
  vm.WeightText="2204.01"; saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null); Check(HistoryService.Saves==saves,culture+" lbs upper bound");
@@ -40,7 +40,7 @@ foreach(var culture in new[]{"en-US","hu-HU"}) {
   Check(vm.WeightError==$"Enter a weight no greater than {max} {unit}!",$"{culture} {unit} upper error: {vm.WeightError}");
   foreach(var negative in new[]{"-1","-0.01","-0,01"}) {
    vm.WeightText="10.25"; vm.WeightText=negative;
-   Check(vm.WeightText=="10.25" && vm.WeightError==$"Enter a weight greater than 0 {unit}!",$"{culture} {unit} negative rejected with lower error {negative}: {vm.WeightError}");
+   Check(vm.WeightText=="10.25" && vm.WeightError=="",$"{culture} {unit} negative rejected with lower error {negative}: {vm.WeightError}");
   }
   foreach(var text in new[]{"0.01",max.ToString(CultureInfo.InvariantCulture)}) {
    vm.WeightText=text; int saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null);
@@ -54,7 +54,7 @@ foreach(var culture in new[]{"en-US","hu-HU"}) {
   foreach(var invalid in new[]{"0","9999","","1.234","-1"}) {
    var settings=new AppSettingsService { IsLbs=startLbs }; var vm=new MainViewModel(new ResultContext(),settings);
    vm.WeightText="0"; vm.RepsText="0";
-   if(invalid is "1.234" or "-1") vm.WeightText=invalid;
+   if(invalid is "1.234" or "-1") { vm.WeightText=invalid; await vm.CalculateCommand.ExecuteAsync(null); }
    else { vm.WeightText=invalid; await vm.CalculateCommand.ExecuteAsync(null); }
    Check(vm.WeightError.Length>0,$"{culture} initial error {invalid}");
    var originalText=vm.WeightText; var originalRepsError=vm.RepsError; var saves=HistoryService.Saves;
@@ -68,6 +68,16 @@ foreach(var culture in new[]{"en-US","hu-HU"}) {
    var expected=invalid==""?"Enter a weight!":invalid=="9999"?$"Enter a weight no greater than {(vm.IsLbs?AppConstants.MaxWeightLbs:AppConstants.MaxWeightKg)} {vm.WeightUnit}!":$"Enter a weight greater than 0 {vm.WeightUnit}!";
    Check(vm.WeightError==expected && HistoryService.Saves==saves,$"{culture} Estimate revalidates selected unit {invalid}: {vm.WeightError}");
   }
+ }
+}
+foreach(var lbs in new[]{false,true}) foreach(var sep in new[]{".",","}) {
+ var ctx=new ResultContext(); var vm=new MainViewModel(ctx,new AppSettingsService()); vm.IsLbs=lbs;
+ vm.WeightText="0"+sep+"56";
+ foreach(var bad in new[]{"0"+sep+"567","junk","0..56","-0.56"}) {
+  vm.WeightText=bad;
+  Check(vm.WeightText=="0"+sep+"56" && vm.WeightError=="", "accepted visible fraction has no format error "+bad);
+  int saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null);
+  Check(HistoryService.Saves==saves+1 && vm.WeightError=="", "Estimate uses retained valid fraction");
  }
 }
 Console.WriteLine($"Input feedback tests: {passed} passed, {failed} failed");

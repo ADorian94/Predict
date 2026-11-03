@@ -9,12 +9,17 @@ internal sealed class WeightLeadingSeparatorFilter : Java.Lang.Object, IInputFil
     public ICharSequence? FilterFormatted(ICharSequence? source, int start, int end,
         ISpanned? dest, int dstart, int dend)
     {
-        if (source is null || dest is null || dstart != 0) return null;
+        if (source is null || dest is null) return null;
         var inserted = source.ToString()![start..end];
-        var candidate = inserted + dest.ToString()![dend..];
-        if (candidate.Length == 0 || (candidate[0] != '.' && candidate[0] != ',')) return null;
-        // Leave invalid edits to the existing VM rejection/error path unchanged.
-        if (!System.Text.RegularExpressions.Regex.IsMatch(candidate, @"\A[.,][0-9]{0,2}\z")) return null;
+        var original = dest.ToString()!;
+        var candidate = original[..dstart] + inserted + original[dend..];
+        if (!System.Text.RegularExpressions.Regex.IsMatch(candidate, @"\A[0-9]*(?:[.,][0-9]{0,2})?\z"))
+        {
+            // Reject before MAUI sees TextChanged. Restore selected text rather than
+            // deleting it; an insertion returns empty, retaining the insertion caret.
+            return new SpannableStringBuilder(dest, dstart, dend);
+        }
+        if (dstart != 0 || candidate.Length == 0 || (candidate[0] != '.' && candidate[0] != ',')) return null;
         // The builder copies ordinary spans, but deliberately excludes NoCopySpan.
         var normalized = new SpannableStringBuilder(source, start, end);
         normalized.Insert(0, "0");
