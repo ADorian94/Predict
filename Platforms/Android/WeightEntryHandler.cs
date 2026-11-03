@@ -13,6 +13,7 @@ internal sealed class WeightEntryHandler : IDisposable
     private readonly Entry _entry;
     private readonly EditText _native;
     private readonly ViewTreeObserver? _observer;
+    private readonly WeightLeadingSeparatorFilter _separatorFilter = new();
     private bool _keyboardWasVisible;
     private bool _disposed;
 
@@ -26,6 +27,8 @@ internal sealed class WeightEntryHandler : IDisposable
     {
         _entry = entry;
         _native = native;
+        // Scoped to this weight Entry; keep MAUI/keyboard filters in their order.
+        native.SetFilters(native.GetFilters().Append(_separatorFilter).ToArray());
         _native.FocusChange += OnFocusChange;
         _observer = native.ViewTreeObserver;
         if (_observer?.IsAlive == true)
@@ -83,6 +86,7 @@ internal sealed class WeightEntryHandler : IDisposable
         _disposed = true;
         _keyboardWasVisible = false;
         _native.FocusChange -= OnFocusChange;
+        _native.SetFilters(_native.GetFilters().Where(filter => !filter.Equals(_separatorFilter)).ToArray());
         if (_observer is not null && _observer.IsAlive)
             _observer.GlobalLayout -= OnGlobalLayout;
     }
