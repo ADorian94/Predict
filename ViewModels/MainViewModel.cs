@@ -63,6 +63,12 @@ public partial class MainViewModel : ObservableObject
         IsLbs = _settings.IsLbs;
     }
 
+    partial void OnIsLbsChanged(bool value)
+    {
+        // Errors describe the previous unit; wait for Estimate to validate again.
+        WeightError = string.Empty;
+    }
+
     partial void OnRpeChanged(double value)
     {
         var snapped = Math.Round(value * 2) / 2.0;
@@ -81,7 +87,9 @@ public partial class MainViewModel : ObservableObject
         if (!System.Text.RegularExpressions.Regex.IsMatch(newValue, @"\A[0-9]*(?:[.,][0-9]{0,2})?\z"))
         {
             WeightText = oldValue ?? string.Empty;
-            WeightError = "Use digits and up to two decimal places (dot or comma).";
+            WeightError = System.Text.RegularExpressions.Regex.IsMatch(newValue, @"\A-[0-9]+(?:[.,][0-9]{0,2})?\z")
+                ? $"Enter a weight greater than 0 {WeightUnit}!"
+                : "Use digits and up to two decimal places (dot or comma).";
             return;
         }
         if (newValue.StartsWith('.') || newValue.StartsWith(','))
@@ -138,9 +146,11 @@ public partial class MainViewModel : ObservableObject
         {
             WeightError = string.IsNullOrWhiteSpace(WeightText)
                 ? "Enter a weight!"
-                : IsLbs
-                    ? $"Enter a valid weight (max {AppConstants.MaxWeightLbs} lbs)!"
-                    : $"Enter a valid weight (max {AppConstants.MaxWeightKg} kg)!";
+                : !System.Text.RegularExpressions.Regex.IsMatch(WeightText, @"\A[0-9]+(?:[.,][0-9]{0,2})?\z")
+                    ? "Use digits and up to two decimal places (dot or comma)."
+                    : weight <= 0
+                        ? $"Enter a weight greater than 0 {WeightUnit}!"
+                        : $"Enter a weight no greater than {(IsLbs ? AppConstants.MaxWeightLbs : AppConstants.MaxWeightKg)} {WeightUnit}!";
         }
         if (!repsOk) RepsError = "Enter a whole number between 1 and 20!";
         if (!weightOk || !repsOk) return;

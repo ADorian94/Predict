@@ -27,6 +27,49 @@ foreach(var culture in new[]{"en-US","hu-HU"}) {
  vm.WeightText="2204.01"; saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null); Check(HistoryService.Saves==saves,culture+" lbs upper bound");
  vm.WeightText="0"; saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null); Check(HistoryService.Saves==saves,culture+" zero invalid");
 }
+foreach(var culture in new[]{"en-US","hu-HU"}) {
+ CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo(culture);
+ foreach(var lbs in new[]{false,true}) {
+  var vm=new MainViewModel(new ResultContext(),new AppSettingsService()); vm.IsLbs=lbs; vm.RepsText="5";
+  var unit=lbs?"lbs":"kg"; var max=lbs?AppConstants.MaxWeightLbs:AppConstants.MaxWeightKg;
+  foreach(var text in new[]{"0","0.00","0,00"}) {
+   vm.WeightText=text; int saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null);
+   Check(vm.WeightError==$"Enter a weight greater than 0 {unit}!" && HistoryService.Saves==saves,$"{culture} {unit} lower error {text}: {vm.WeightError}");
+  }
+  vm.WeightText=(max+0.01).ToString("0.00",CultureInfo.InvariantCulture); await vm.CalculateCommand.ExecuteAsync(null);
+  Check(vm.WeightError==$"Enter a weight no greater than {max} {unit}!",$"{culture} {unit} upper error: {vm.WeightError}");
+  foreach(var negative in new[]{"-1","-0.01","-0,01"}) {
+   vm.WeightText="10.25"; vm.WeightText=negative;
+   Check(vm.WeightText=="10.25" && vm.WeightError==$"Enter a weight greater than 0 {unit}!",$"{culture} {unit} negative rejected with lower error {negative}: {vm.WeightError}");
+  }
+  foreach(var text in new[]{"0.01",max.ToString(CultureInfo.InvariantCulture)}) {
+   vm.WeightText=text; int saves=HistoryService.Saves; await vm.CalculateCommand.ExecuteAsync(null);
+   Check(vm.WeightError=="" && HistoryService.Saves==saves+1,$"{culture} {unit} valid boundary {text}");
+  }
+ }
+}
+foreach(var culture in new[]{"en-US","hu-HU"}) {
+ CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo(culture);
+ foreach(var startLbs in new[]{false,true}) foreach(var viaRefresh in new[]{false,true}) {
+  foreach(var invalid in new[]{"0","9999","","1.234","-1"}) {
+   var settings=new AppSettingsService { IsLbs=startLbs }; var vm=new MainViewModel(new ResultContext(),settings);
+   vm.WeightText="0"; vm.RepsText="0";
+   if(invalid is "1.234" or "-1") vm.WeightText=invalid;
+   else { vm.WeightText=invalid; await vm.CalculateCommand.ExecuteAsync(null); }
+   Check(vm.WeightError.Length>0,$"{culture} initial error {invalid}");
+   var originalText=vm.WeightText; var originalRepsError=vm.RepsError; var saves=HistoryService.Saves;
+   int notifications=0; vm.PropertyChanged+=(_,e)=> { if(e.PropertyName==nameof(vm.WeightError)) notifications++; };
+   if(viaRefresh) { settings.IsLbs=!startLbs; vm.RefreshUnit(); } else vm.IsLbs=!startLbs;
+   Check(vm.WeightError=="" && notifications>0,$"{culture} switch clears visible error {invalid} refresh={viaRefresh} fromLbs={startLbs}");
+   Check(vm.WeightText==originalText && vm.RepsError==originalRepsError && HistoryService.Saves==saves,$"{culture} switch preserves input/reps and does not calculate {invalid}");
+   vm.RefreshUnit();
+   Check(vm.WeightError=="",$"{culture} refresh does not revalidate {invalid}");
+   await vm.CalculateCommand.ExecuteAsync(null);
+   var expected=invalid==""?"Enter a weight!":invalid=="9999"?$"Enter a weight no greater than {(vm.IsLbs?AppConstants.MaxWeightLbs:AppConstants.MaxWeightKg)} {vm.WeightUnit}!":$"Enter a weight greater than 0 {vm.WeightUnit}!";
+   Check(vm.WeightError==expected && HistoryService.Saves==saves,$"{culture} Estimate revalidates selected unit {invalid}: {vm.WeightError}");
+  }
+ }
+}
 Console.WriteLine($"Input feedback tests: {passed} passed, {failed} failed");
 return failed==0?0:1;
 
