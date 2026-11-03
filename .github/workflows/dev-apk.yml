@@ -130,3 +130,12 @@ jobs:
             unsigned-export/preparation-report.json
           if-no-files-found: error
           retention-days: 3
+
+      - name: Retain only unsigned failure diagnostic candidate (not accepted)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: FAILED-NOT-ACCEPTED-code3-diagnostic
+          path: source/bin/Release/net10.0-android36.0/android-arm64/hu.dorian.predict.aab
+          if-no-files-found: ignore
+          retention-days: 1

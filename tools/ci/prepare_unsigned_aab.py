@@ -96,7 +96,13 @@ def prepare(source, workflow, destination, bundletool, runner=subprocess.run):
     signed = expected.with_name('hu.dorian.predict-Signed.aab')
     if signed.exists():
         signed.unlink()
-    gates = artifact_gates(expected, gate_context, source_sha)
+    try:
+        gates = artifact_gates(expected, gate_context, source_sha)
+    except Exception:
+        # Observe the same real unsigned candidate; NEVER convert failure to success.
+        diagnostic = _gates.module('ads_attestation').attest(expected, 'Production', gate_context['dotnet'], Path(gate_context['lz4']), source_sha)
+        print('FAILED_ADS_DIAGNOSTIC=' + json.dumps(diagnostic), flush=True)
+        raise
     if gates.get('status') != 'PASS' or gates.get('artifact_sha256') != hashlib.sha256(expected.read_bytes()).hexdigest():
         raise ValueError('Static gate result binding mismatch')
     destination.mkdir(parents=True)
