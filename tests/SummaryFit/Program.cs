@@ -12,7 +12,7 @@ foreach(var text in new[]{"0.56 kg","120.55 kg","999.99 kg","1000 kg","120.55 lb
   Check(native.MaxLines==1,"native max lines");
   Check(native.Ellipsize==null,"no numeric truncation");
   Check(!native.HorizontalScrolling,"fit available width rather than offscreen scroll");
-  Check(native.Fit==(1,20,1,Android.Util.ComplexUnitType.Sp),"native autosize scaled glyph contract");
+  Check(native.Fit==(1,20,1,(int)Android.Util.ComplexUnitType.Sp),"native autosize scaled glyph contract");
   Check(native.Text==text,"complete value preserved");
  }
 }
@@ -30,9 +30,9 @@ namespace Android.Widget {
  public class TextView {
   public string Text=""; public int AvailableWidth; public double FontScale;
   public int MaxLines; public object? Ellipsize=new(); public bool HorizontalScrolling=true;
-  public (int,int,int,Android.Util.ComplexUnitType) Fit;
+  public (int,int,int,int) Fit;
   public void SetMaxLines(int x)=>MaxLines=x;
   public void SetHorizontallyScrolling(bool x)=>HorizontalScrolling=x;
-  public void SetAutoSizeTextTypeUniformWithConfiguration(int min,int max,int step,Android.Util.ComplexUnitType unit)=>Fit=(min,max,step,unit);
+  public void SetAutoSizeTextTypeUniformWithConfiguration(int min,int max,int step,int unit)=>Fit=(min,max,step,unit);
  }
 }

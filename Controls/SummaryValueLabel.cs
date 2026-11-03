@@ -15,7 +15,7 @@ public class SummaryValueLabel : Label
             // Android API 26+ (the app minimum): layout-aware fitting uses the actual
             // typeface/glyphs and scaled pixels, including accessibility font scale.
             // Never shorten digits or append an ellipsis, even in very narrow layouts.
-            native.SetAutoSizeTextTypeUniformWithConfiguration(1, 20, 1, global::Android.Util.ComplexUnitType.Sp);
+            native.SetAutoSizeTextTypeUniformWithConfiguration(1, 20, 1, (int)global::Android.Util.ComplexUnitType.Sp);
         }
 #endif
     }
