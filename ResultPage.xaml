@@ -50,7 +50,7 @@
                         Background="{DynamicResource CardBackgroundBrush}"
                         Stroke="{DynamicResource CardBorderBrush}">
                     <Border.StrokeShape><shapes:RoundRectangle CornerRadius="20"/></Border.StrokeShape>
-                    <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="8">
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                         <VerticalStackLayout Grid.Column="0" HorizontalOptions="Fill">
                             <Label Text="WEIGHT" FontSize="11" FontAttributes="Bold"
                                    TextColor="{DynamicResource LabelMuted}" HorizontalTextAlignment="Center" CharacterSpacing="1"/>
