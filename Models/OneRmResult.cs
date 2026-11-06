@@ -37,7 +37,9 @@ public record OneRmResult(
     public bool IsRpeUnavailable => !HasRpeEstimate;
     public int FormulaCount => HasRpeEstimate ? 8 : 7;
     public string RpeTableText => RpeTableDisplay is double value ? $"{value:0.0} {Unit}" : "N/A";
-    public string RoundingNote => IsRounded
+    public string RoundingNote => BestEstimateOverride.HasValue
+        ? "(saved history estimate)"
+        : IsRounded
         ? $"(avg of {FormulaCount} formulas, rounded to 2.5)"
         : $"(avg of {FormulaCount} formulas)";
     public string RpeAvailabilityNote => HasRpeEstimate ? string.Empty
@@ -48,9 +50,14 @@ public record OneRmResult(
                 LombardiDisplay, MayhewDisplay, OConnerDisplay, WathanDisplay }
             .Where(value => value.HasValue).Average(value => value!.Value);
 
-    public double BestEstimate => IsRounded
+    // Set only when a stored history best estimate must be preserved even though the current
+    // formula set cannot reproduce it (legacy or explicit-mode formula drift).
+    // Keeps the reopened number and caption faithful to the saved history value.
+    public double? BestEstimateOverride { get; init; }
+
+    public double BestEstimate => BestEstimateOverride ?? (IsRounded
         ? Math.Round(RawAverage / 2.5) * 2.5
-        : Math.Round(RawAverage, 1);
+        : Math.Round(RawAverage, 1));
 
     public IReadOnlyList<FormulaEntry> Formulas
     {

@@ -39,8 +39,7 @@ public partial class HistoryViewModel : ObservableObject
     [RelayCommand]
     public async Task OpenEntry(HistoryEntry entry)
     {
-        _resultContext.Current = OneRmCalculator.Calculate(
-            entry.Weight, entry.Reps, entry.Rpe, entry.IsLbs);
+        _resultContext.Current = entry.ToResult();
         await Shell.Current.GoToAsync("ResultPage");
     }
 

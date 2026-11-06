@@ -20,7 +20,7 @@ public static class HistoryService
         var entries = Load();
         entries.Insert(0, new HistoryEntry(
             DateTime.Now, result.Weight, result.Reps, result.Rpe,
-            result.BestEstimate, result.Unit, result.IsLbs));
+            result.BestEstimate, result.Unit, result.IsLbs, result.IsRounded));
         if (entries.Count > MaxEntries)
             entries = entries.Take(MaxEntries).ToList();
         Preferences.Default.Set(AppConstants.PrefHistory, JsonSerializer.Serialize(entries));
