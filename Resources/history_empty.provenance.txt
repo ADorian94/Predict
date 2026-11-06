@@ -1,0 +1,20 @@
+History empty-state illustration
+Source: unDraw, https://undraw.co/
+Artist: Katerina Limpitsouni
+Original supplied SVG SHA-256:
+98bd4df3b046b2775253023c940f2a63b76c19213f476ab3bd3b91ed759bfe97
+
+Only fill colors were substituted; geometry, transforms, source metadata,
+white (#fff) and skin (#9e616a, #ffb6b6, #ffb8b8) remain unchanged.
+Recolor mapping:
+#6c63ff -> #7C3AED (Predict AccentPrimary)
+#2f2e41 -> #8B7CB3 (mid lavender clothing/hair; visible on both themes)
+#3f3d56 -> #A496C4 (lighter purple neutral)
+#e6e6e6 -> #DDD6F0 (pale lavender plants)
+#f2f2f2 -> #EDE9F5 (near-white lavender)
+#ccc -> #C4B5DD (muted lavender detail)
+
+Resources/Images/history_empty.svg is packaged by MAUI Resizetizer at
+BaseSize 320,239 and referenced in XAML as history_empty.png.
+The illustration is decorative; the existing themed label conveys the state.
+No device rendering or native layout acceptance is implied by source tests.
