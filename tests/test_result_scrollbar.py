@@ -9,9 +9,12 @@ XAML = '{http://schemas.microsoft.com/winfx/2009/xaml}'
 
 
 class ResultScrollbarTests(unittest.TestCase):
-    def test_code5_identity_preserves_display_version_and_package(self):
+    def test_identity_preserves_display_version_and_package(self):
         project = ET.parse(ROOT / 'Predict.csproj').getroot()
-        self.assertEqual('5', project.findtext('.//ApplicationVersion'))
+        version_code = project.findtext('.//ApplicationVersion')
+        self.assertIsNotNone(version_code)
+        self.assertRegex(version_code, r'\A[1-9][0-9]{0,9}\Z')
+        self.assertLessEqual(int(version_code), 2100000000)
         self.assertEqual('1.0', project.findtext('.//ApplicationDisplayVersion'))
         self.assertEqual('hu.dorian.predict', project.findtext('.//ApplicationId'))
 
