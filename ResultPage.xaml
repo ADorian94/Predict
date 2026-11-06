@@ -42,7 +42,7 @@
         </Grid>
 
         <!-- Scrollable content -->
-        <ScrollView Grid.Row="1">
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="12">
 
                 <!-- Input summary -->
