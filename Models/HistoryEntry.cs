@@ -18,7 +18,9 @@ public record HistoryEntry(
     // matched against the raw and rounded candidates; when both match, rounded is used as a
     // stable tie fallback without claiming which mode the original entry used. When neither
     // candidate reproduces the stored best, that best is preserved instead of being replaced.
-    public OneRmResult ToResult()
+    public OneRmResult ToResult() => RestoreResult() with { EstimatedAt = Date };
+
+    private OneRmResult RestoreResult()
     {
         if (IsRounded is bool explicitMode)
         {

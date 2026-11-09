@@ -20,6 +20,9 @@ public record OneRmResult(
 {
     private const double KgToLbs = 2.20462262;
 
+    // Capture once, not when a result page happens to read its date binding.
+    public DateTime EstimatedAt { get; init; } = DateTime.Now;
+
     private double ToDisplay(double kg) => IsLbs ? Math.Round(kg * KgToLbs, 1) : kg;
 
     public double? RpeTableDisplay => RpeTableResult is double value ? ToDisplay(value) : null;

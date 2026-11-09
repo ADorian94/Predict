@@ -52,7 +52,7 @@ public partial class ResultViewModel : ObservableObject
         catch (OperationCanceledException) { }
     }
 
-    public string EstimationDate => DateTime.Now.ToString("yyyy.MM.dd HH:mm");
+    public string EstimationDate => Result?.EstimatedAt.ToString("yyyy.MM.dd HH:mm") ?? string.Empty;
 
     public string RoundingNote => Result?.RoundingNote ?? string.Empty;
 
