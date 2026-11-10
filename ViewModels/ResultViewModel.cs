@@ -68,10 +68,11 @@ public partial class ResultViewModel : ObservableObject
     {
         if (Result is null) return;
         var lines = string.Join("\n", Formulas.Select(f => $"  {f.Name}: {f.ResultDisplay}"));
+        var rpeInput = Result.HasRpeEstimate ? $" | RPE: {Result.Rpe:0.0}" : string.Empty;
         var text =
-            $"Predict â€” 1RM Estimate\n" +
-            $"Weight: {WeightDisplay} | Reps: {Result.Reps} | RPE: {Result.Rpe:0.0}\n\n" +
-            $"Best estimate: {AnimatedBestEstimate}\n{RoundingNote}\n{Result.RpeAvailabilityNote}\n\n" +
+            $"Predict - 1RM Estimate\n" +
+            $"Weight: {WeightDisplay} | Reps: {Result.Reps}{rpeInput}\n\n" +
+            $"Best estimate: {Result.BestEstimate:0.0} {Result.Unit}\n{RoundingNote}\n\n" +
             $"Formulas:\n{lines}";
 
         MixpanelService.Track("result_shared");
